@@ -69,6 +69,41 @@ never hide a guess inside a formula.
 - If a needed package isn't installed, install it (e.g. `pip install openpyxl`)
   and proceed; don't hand the user setup steps.
 
+## House visual style — ALWAYS apply (this is what makes the model not look auto-generated)
+Default spreadsheets are an instant tell: Calibri 11, gridlines on, a border
+around every cell, primary-colour header fills, raw unformatted numbers. Never
+ship that. A reusable styling toolkit lives at **`scripts/house_style.py`** —
+use it for every Excel build so output is consistently designed.
+
+    import sys, os; sys.path.insert(0, "scripts")
+    import house_style as hs
+    wb = hs.workbook(); ws = hs.sheet(wb, "Model")
+    hs.title_block(ws, "Company", "subtitle · units · period")
+    hs.section(ws, row, "Revenue build", span=6)
+    hs.col_headers(ws, row, ["FY24", ...], start_col=3)
+    hs.label(...); hs.row_inputs(...); hs.cell(..., kind="formula"); hs.total_row(...)
+    hs.set_widths(...); hs.finish(ws, freeze="C8"); wb.save("models/...xlsx")
+
+`scripts/demo_model.py` is a working reference — read it before building. The
+rules the toolkit encodes (apply them even when building by hand or in Sheets):
+- **Gridlines OFF.** Structure comes from spacing, hairlines and section bars.
+- **Typography:** Arial (not Calibri). Title ~17pt semibold ink; subtitle 9.5pt
+  muted; section bars 9.5pt bold white on navy; data 10pt. A left spacer column.
+- **Colour = meaning, sparingly:** navy section bars, **blue inputs**, black
+  formulas, **green cross-sheet links**, muted grey for %/sub-metrics and notes.
+  No rainbow fills. Palette is themed to Evolute's brand in `PALETTE` (one block
+  to re-theme).
+- **Number formats, always:** thousands separators, **negatives in parentheses**
+  (`#,##0;(#,##0)`), accounting `$`, `0.0%`, `0.0"x"`. State units once in a
+  header, not on every cell.
+- **Totals** get a thin top rule + bold; key totals (EBITDA, net income) a
+  medium rule. **Subtle zebra banding** on dense blocks, not every row.
+- **Freeze panes** below headers / right of labels; landscape fit-to-width print.
+- Keep a **legend** of the colour convention and a visible **checks** area.
+After saving, you can sanity-check styling by reloading with openpyxl, and (if a
+visual is useful) render via `xlsx2html` + a screenshot — note that previewer
+shows formula cells blank since it doesn't recalc; they populate in Excel.
+
 ## How you work
 - **Lead with the assumptions.** Before building, lay out the drivers you'll use
   and your default values; ask only for the inputs you genuinely can't infer

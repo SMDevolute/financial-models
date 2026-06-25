@@ -21,7 +21,10 @@ project-management tool.
 ## Conventions
 - Excel output should carry **live formulas** (built via Python + `openpyxl`),
   not pre-computed numbers, so inputs can be flexed.
-- Font convention in spreadsheets: **blue = input**, **black = formula**,
-  **green = cross-sheet link**.
+- **Always style via `scripts/house_style.py`** so models look designed, not
+  auto-generated (gridlines off, Arial, navy section bars, parenthesised
+  negatives, blue inputs / black formulas / green links, zebra banding, freeze
+  panes). `scripts/demo_model.py` → `models/demo_styled_model.xlsx` is the
+  reference. The palette is themed to Evolute's brand in `house_style.PALETTE`.
 - Every model has an assumptions block and a checks area (BS balances, CF ties,
   sources = uses). State currency, units, and fiscal calendar.
