@@ -3,7 +3,7 @@
 Model state tonight: TTK + Combi+ only, volumes 600/1,800/3,600/7,200, EBITDA −3.3/+0.7/+11.6 €m, cash trough −€248k Jan/Feb-2028 (artifact of the Jan-1 BOM tier step meeting 45-day supplier terms).
 
 ## Decisions needed (Simon / client)
-1. **Jan-2028 cash dip** — add a one-line "timing artifact" note to How-to-read (recommended), or smooth the tier phase-in inside COGS (surgery, not recommended). Currently B36 says "covered by a modest working-capital buffer" — confirm that wording with the client or soften it.
+1. ~~**Jan-2028 cash dip**~~ **DONE 2026-08-20**: B36 rewritten — dip explained as a timing artifact (Jan-1 tier step vs 45-day supplier terms; cash benefit lags P&L by ~45 days; effective trough ≈ 0). Old "working-capital buffer" wording removed.
 2. **Volume plan sign-off** — 600/1,800/3,600/7,200 is what the dataroom now shows; client should bless it.
 3. **Notes columns** — the grey "what this row does" annotations are visible to dataroom viewers. Keep visible or hide the columns?
 
