@@ -1,5 +1,11 @@
 # Tarnoc — to-do (2026-09-01)
 
+> **SUPERSEDED 2026-09-01 (evening).** The volume plan below was rebuilt as a real
+> operating model — units are now an output of demand, sales capacity and build
+> capacity. See `docs/tarnoc-growth-engine-2026-09-01.md` and
+> `models/Tarnoc_LIVE_2026-09-01_growth-engine.xlsx`. Items 1, 5, 8 and 9 below are
+> still open and are carried into that memo.
+
 ## Where we left off (2026-08-31)
 Built the €10M aggressive case as a **toggled** model, not a fork:
 `models/Tarnoc_LIVE_2026-08-31_10m-aggressive.xlsx` (built by
