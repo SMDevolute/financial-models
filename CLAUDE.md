@@ -3,6 +3,29 @@
 A dedicated home for financial modeling work — kept separate from the Evolute
 project-management tool.
 
+## Communication style
+
+These rules apply to responses to the user, not to product content.
+
+- Be concise and lead with the result, problem, or decision.
+- Use literal, natural language. Avoid metaphors, clever phrasing, vague
+  abstractions, and inflated language.
+- State exactly what happened, what caused it, what changed, and what remains.
+- Name the person, system, file, or process performing an action. Do not give
+  agency to objects or concepts.
+- Separate confirmed facts from assumptions. Say what you verified and what you
+  could not verify.
+- Use short paragraphs and bullets when they improve readability.
+- Do not repeat the request, narrate routine commands, praise the question, or
+  add generic introductions and conclusions.
+- Ask questions only when the answer would materially change the work.
+
+Before responding, check:
+
+1. Would a person say this to a colleague in these exact words?
+2. Does every sentence have one clear, literal meaning?
+3. Can anything be removed without losing useful information?
+
 ## Working here
 - Use the **`financial-modeler`** subagent (defined in
   `.claude/agents/financial-modeler.md`) for any modeling task: 3-statement

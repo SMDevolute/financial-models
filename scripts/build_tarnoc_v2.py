@@ -4,8 +4,8 @@ build_tarnoc_v2.py
 Tarnoc operating model, built from scratch.
 
 Design follows the house conventions of the existing Tarnoc workbook: Geist 10pt,
-white-on-black section bars, pale yellow (#FFF2CC) hardcoded inputs, blue
-historicals, grey ratio rows, lighter grey balance-sheet checks, parenthesised
+white-on-black section bars, pale yellow (#FFF2CC) hardcoded inputs, black
+calculated cells and links alike, grey ratio rows, lighter grey balance-sheet checks, parenthesised
 negatives, an Arial 9 italic grey notes column on the right, gridlines off and
 frozen panes on every time series.
 
@@ -34,7 +34,7 @@ OUT = os.environ.get('OUT', 'models/Tarnoc_v2_2026-09-01.xlsx')
 # ---------------------------------------------------------------------------
 FONT = 'Geist'
 NOTE_FONT = 'Arial'
-INK, WHITE, BLUE = 'FF000000', 'FFFFFFFF', 'FF0000FF'
+INK, WHITE = 'FF000000', 'FFFFFFFF'
 GREY, CHECK_GREY, RED = 'FF999999', 'FFCCCCCC', 'FFFF0000'
 FILL_BLACK, FILL_SUB, FILL_INPUT = 'FF000000', 'FFF3F3F3', 'FFFFF2CC'
 FILL_SUBSEC, FILL_WHITE = 'FFEFEFEF', 'FFFFFFFF'
@@ -131,7 +131,7 @@ def subbar(ws, row, text):
     for c in range(2, LASTCOL + 1):
         ws.cell(row, c).fill = fill(FILL_SUBSEC)
 
-KIND_COLOR = {'formula': INK, 'input': INK, 'link': BLUE,
+KIND_COLOR = {'formula': INK, 'input': INK, 'link': INK,
               'ratio': GREY, 'check': CHECK_GREY}
 
 def line(ws, row, lbl, unit, fn, fmt=NUM, kind='formula', total=False,
@@ -1132,11 +1132,10 @@ h_bar(3, 'COLOUR CODING')
 h_line(4, 'Sample', 'Hardcoded input. These are the only cells to change, and they all live on Assumptions.',
        f(bold=True), FILL_INPUT)
 h_line(5, 'Sample', 'Calculated cell. Do not type over these.', f(bold=True))
-h_line(6, 'Sample', 'Link to another tab.', f(bold=True, color=BLUE))
-h_line(7, 'Sample', 'Subtotal or total row.', f(bold=True), FILL_SUB)
-h_line(8, 'Sample', 'Section header.', f(bold=True, color=WHITE), FILL_BLACK)
-h_line(9, 'Sample', 'Margin or ratio row.', f(bold=True, color=GREY))
-h_line(10, 'Sample', 'Check row. Must read nil.', f(bold=True, color=CHECK_GREY))
+h_line(6, 'Sample', 'Subtotal or total row.', f(bold=True), FILL_SUB)
+h_line(7, 'Sample', 'Section header.', f(bold=True, color=WHITE), FILL_BLACK)
+h_line(8, 'Sample', 'Margin or ratio row.', f(bold=True, color=GREY))
+h_line(9, 'Sample', 'Check row. Must read nil.', f(bold=True, color=CHECK_GREY))
 
 h_bar(12, 'HOW THE MODEL FITS TOGETHER')
 for r, txt in enumerate([
