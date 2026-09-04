@@ -502,8 +502,8 @@ a_yeartable('core_ga', 'Leadership, finance, HR, IT and legal', 'FTE',
             [3, 4, 5, 6, 8], [3, 5, 10, 14, 18], NUM,
             'the whole back office, typed per year: leadership in post by end 2026, then finance, HR, IT and legal as the company grows')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
-a_single('visits_tech', 'Units on a service contract per field engineer', 'units', 750, 750,
-         note='one visit per contract per year, so about three and a half visits per engineer per working day')
+a_single('visits_tech', 'Boilers one field engineer can look after', 'boilers', 750, 750,
+         note='sizes the field service team: boilers on a service contract divided by this number = engineers to hire. Each boiler gets one visit a year, an engineer does three to four a day')
 
 a_bar('LOADED COST PER PERSON  (employer cost, including taxes)')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
@@ -747,7 +747,7 @@ line(PE, 18, 'Leadership, finance, HR, IT and legal', 'FTE',
 line(PE, 19, 'Field service engineers', 'FTE',
      lambda cl, i: f'=ROUND({RFY}!{cl}41*{LV("svc_attach")}/{LV("visits_tech")},0)',
      annual='end',
-     note='salaried staff: one engineer per 750 units on a service contract')
+     note='salaried staff: boilers on a service contract divided by the boilers one engineer can look after')
 line(PE, 20, 'Operations, support and administration', 'FTE',
      lambda cl, i: f'=SUM({cl}12:{cl}19)', NUM1, total=True, annual='end')
 line(PE, 21, 'Total headcount', 'FTE', lambda cl, i: f'={cl}11+{cl}20', NUM1,
