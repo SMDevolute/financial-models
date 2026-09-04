@@ -551,8 +551,8 @@ print(f'assumptions complete: rows 4..{LAST_A}')
 # ===========================================================================
 RF = sheet('Revenue Forecast', label_w=44, freeze='E4')
 title(RF, 'Tarnoc B.V.  Revenue Forecast',
-      'Units sold is an output: marketing spend generates orders, selling and build '
-      'capacity cap them, and row 35 says which one bit.')
+      'Units sold is an output: marketing spend generates orders, and selling and build '
+      'capacity cap them.')
 datebar(RF)
 LM = MC[-1]
 
@@ -618,11 +618,7 @@ line(RF, 34, 'Units sold', 'units',
      lambda cl, i: (f'=IF({cl}$3<{LV("sell_from")},0,'
                     f'ROUND(MIN({cl}11,{cl}22,{cl}31),0))'), grand=True,
      note='nil until the first month we can sell, then the smallest of demand, selling and build capacity')
-line(RF, 35, 'Why we did not sell more', '',
-     lambda cl, i: (f'=IF({cl}34>={cl}31-0.5,"Build capacity",'
-                    f'IF({cl}34>={cl}22-0.5,"Selling capacity","Demand"))'),
-     TEXT, annual='end')
-line(RF, 36, 'Build capacity used', '%',
+line(RF, 35, 'Build capacity used', '%',
      lambda cl, i: f'=IFERROR({cl}34/{cl}31,0)', PCT, 'ratio', annual='avg')
 
 bar(RF, 38, 'UNIT SPLIT AND INSTALLED BASE')
@@ -1008,12 +1004,9 @@ def yc(sh, row, y):
 d_bar(5, 'VOLUME AND CUSTOMERS')
 d_line(6, 'Units sold', lambda y: yc('Revenue Forecast', 34, y), total=True)
 d_line(7, 'Installed base at year end', lambda y: yc('Revenue Forecast', 41, y))
-d_line(8, 'Why we did not sell more, December',
-       lambda y: f"='Revenue Forecast'!{YMONTHS[y][-1]}35", TEXT,
-       note='the reason the plan could not sell more in the last month of the year')
-d_line(9, 'Build capacity used', lambda y: yc('Revenue Forecast', 36, y), PCT1, 'ratio')
-d_line(10, 'Installer partners at year end', lambda y: yc('Revenue Forecast', 20, y), NUM1)
-d_line(11, 'Marketing cost per unit sold', lambda y: yc('Revenue Forecast', 12, y), EUR)
+d_line(8, 'Build capacity used', lambda y: yc('Revenue Forecast', 35, y), PCT1, 'ratio')
+d_line(9, 'Installer partners at year end', lambda y: yc('Revenue Forecast', 20, y), NUM1)
+d_line(10, 'Marketing cost per unit sold', lambda y: yc('Revenue Forecast', 12, y), EUR)
 
 d_bar(13, 'PROFIT AND LOSS')
 d_line(14, 'Revenue', lambda y: yc('Financial Statements', 6, y), EUR, total=True)
@@ -1151,7 +1144,6 @@ for r, txt in enumerate([
     '    1.  Orders the funnel generates.  Marketing spend divided by cost per lead, then through the two conversion rates.',
     '    2.  What we can sell.  Our own reps times quota, plus installer partners times units each, capped by the direct and channel mix. No ramp-up: reps and partners sell at full rate from the month they join.',
     '    3.  What we can build.  The assembly partner, plus any in-house line that is producing.',
-    'Revenue Forecast row 35 names which of the three stopped us in each month, and the Dashboard shows it by year.',
     'There is no market size or market share anywhere in the model.',
 ], start=23):
     HR.cell(r, 3, txt).font = f()
