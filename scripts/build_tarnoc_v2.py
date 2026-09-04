@@ -510,7 +510,7 @@ a_single('c_pm', 'Partner manager', 'EUR/month', 8000, 8000, EUR)
 a_single('c_comm', 'Trainer, order desk, marketing', 'EUR/month', 7000, 7000, EUR)
 a_single('c_ops', 'Supply chain and production', 'EUR/month', 5000, 5000, EUR)
 a_single('c_sup', 'Support and escalation', 'EUR/month', 4800, 4800, EUR)
-a_single('c_ga', 'Leadership, finance, HR, IT and legal', 'EUR/month', 7000, 7000, EUR)
+a_single('c_ga', 'Leadership and back office', 'EUR/month', 7000, 7000, EUR)
 a_single('c_rnd', 'R&D engineer', 'EUR/month', 5700, 5700, EUR,
          note='the blended cost of the seven engineers already in post')
 a_single('c_tech', 'Field service engineer', 'EUR/month', 6500, 6500, EUR)
