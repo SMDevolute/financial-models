@@ -347,8 +347,8 @@ a_single('grant_d', 'Subsidy received in', 'date',
 a_bar('WORKING CAPITAL')
 a_single('dso', 'Days sales outstanding', 'days', 20, 20)
 a_single('dpo', 'Days payable outstanding', 'days', 45, 45)
-a_single('dio', 'Days inventory outstanding', 'days', 0, 30,
-         note='the aggressive case carries stock, the base case does not')
+a_single('dio', 'Days inventory outstanding', 'days', 0, 0,
+         note='the assembly partner holds the stock; nothing sits on our balance sheet')
 
 a_bar('PRICING  (ex VAT)')
 a_single('p_ttk', 'Turbineketel list price', 'EUR/unit', 8525.62, 8525.62, EUR)
@@ -359,7 +359,7 @@ a_single('i_ttk', 'Installation, TTK', 'EUR/unit', 2800, 2800, EUR,
          'pass-through: the customer is charged what the installer is paid')
 a_single('i_combi', 'Installation, Combi+', 'EUR/unit', 3800, 3800, EUR,
          'pass-through, so it adds revenue and an identical cost')
-a_single('mix_ttk', 'TTK share of units', '%', 0.20, 0.20, PCT)
+a_single('mix_ttk', 'TTK share of units', '%', 0.25, 0.25, PCT)
 a_calc('mix_combi', 'Combi+ share of units', '%', f'=1-{LV("mix_ttk")}', PCT)
 print(f'assumptions: switches through pricing, rows 4..{_ar-1}')
 
@@ -480,7 +480,7 @@ a_single('ship_combi', 'Inbound shipping, Combi+ outdoor unit', 'EUR/unit', 100,
 # ---- organisation ---------------------------------------------------------
 a_bar('ORGANISATION  (headcount follows whatever creates the work)')
 a_yeartable('rnd_add', 'R&D engineers hired in the year', 'FTE',
-            [0, 2, 2, 3, 4], [0, 3, 11, 12, 12], NUM,
+            [0, 2, 2, 3, 4], [0, 5, 13, 14, 14], NUM,
             'a novel turbine machine plus the Twincycle needs engineers, not a fixed team')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
 a_single('rnd_start', 'R&D engineers carried into 2027', 'FTE', 10, 10,
