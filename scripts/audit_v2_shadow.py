@@ -94,7 +94,6 @@ mkt_fte = n(live('Marketing spend per marketer'))
 visits = n(live('Boilers one field engineer can look after'))
 rnd_s = n(live('R&D engineers carried into 2027')); mkt_base = n(live('Marketing team floor'))
 rndadd = yearvals('R&D engineers hired in the year')
-core_y = yearvals('Leadership, finance, HR, IT and legal')
 c_rep = n(live('Sales rep')); c_pm = n(live('Partner manager'))
 c_comm = n(live('Trainer, order desk, marketing')); c_ops = n(live('Supply chain and production'))
 c_tech = n(live('Field service engineer'))
@@ -214,7 +213,7 @@ for i in range(NM):
     S['hc_sup'][i] = xround(S['ib_close'][i]/ib_sup)
     S['hc_esc'][i] = xround(S['ib_close'][i]/ib_esc)
     S['hc_rnd'][i] = rnd_s + sum(rndadd[k] for k in YEARS if k <= y)
-    S['hc_core'][i] = core_y[y]
+    S['hc_core'][i] = n(PE.cell(17, M0 + i).value)   # typed input on the Personnel tab
     S['hc_tech'][i] = xround(S['ib_close'][i]*svc_a/visits)
     S['hc_ops'][i] = sum(S[k][i] for k in ('hc_sc','hc_op','hc_sup','hc_esc','hc_rnd','hc_core','hc_tech'))
     S['hc_pay'][i] = S['hc_sm'][i] + S['hc_ops'][i]

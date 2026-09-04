@@ -7,7 +7,7 @@ CALC=['Revenue Forecast','COGS','Personnel','OPEX','Financial Statements']
 fails=[]
 
 print('=== 1. hardcoded numbers in the monthly grid (only the frozen 2026 block is allowed) ===')
-ALLOWED={('OPEX',r) for r in (38,39,40,41,42,43)}
+ALLOWED={('OPEX',r) for r in (38,39,40,41,42,43)}|{('Personnel',17)}
 hard=[]
 for name in CALC:
     ws=F[name]

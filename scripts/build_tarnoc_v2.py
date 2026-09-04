@@ -496,9 +496,6 @@ a_single('ib_per_esc', 'Installed units per technical escalation FTE', 'units', 
 a_single('ptr_per_tr', 'New partners per year per installer trainer', 'partners', 40, 40)
 a_single('u_per_desk', 'Units per order desk FTE', 'units/yr', 3000, 3000)
 a_single('mkt_per_fte', 'Marketing spend per marketer', 'EUR/yr', 3000000, 3000000, EUR)
-a_yeartable('core_ga', 'Leadership, finance, HR, IT and legal', 'FTE',
-            [3, 4, 5, 6, 8], [3, 5, 10, 14, 18], NUM,
-            'the whole back office, typed per year: leadership in post by end 2026, then finance, HR, IT and legal as the company grows')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
 a_single('visits_tech', 'Boilers one field engineer can look after', 'boilers', 750, 750,
          note='sizes the field service team: boilers on a service contract divided by this number = engineers to hire. Each boiler gets one visit a year, an engineer does three to four a day')
@@ -706,7 +703,7 @@ line(CG, 21, 'Gross profit per unit', 'EUR/unit',
 PE = sheet('Personnel', label_w=44, freeze='E4')
 title(PE, 'Tarnoc B.V.  Personnel',
       'Headcount by team. Every number is driven by whatever creates the work: units, '
-      'installed base, partners signed or marketing spend.')
+      'installed base, partners signed or marketing spend. The back office is typed in directly.')
 datebar(PE)
 yr_rnd, lv_rnd = AY['rnd_add']
 
@@ -737,9 +734,10 @@ line(PE, 16, 'R&D engineers', 'FTE',
      lambda cl, i: (f'={LV("rnd_start")}+SUMIF(Assumptions!$D${yr_rnd}:$H${yr_rnd},'
                     f'"<="&YEAR({cl}$3),Assumptions!$D${lv_rnd}:$H${lv_rnd})'),
      annual='end', note='the founding engineers plus everyone hired up to and including this year')
+BACK_OFFICE = {2026: 3, 2027: 4, 2028: 5, 2029: 6, 2030: 8}
 line(PE, 17, 'Leadership, finance, HR, IT and legal', 'FTE',
-     lambda cl, i: '=' + YL('core_ga', cl), kind='link', annual='end',
-     note='the whole back office, typed per year on Assumptions')
+     lambda cl, i: BACK_OFFICE[YEARS[i // 12]], kind='input', annual='end',
+     note='typed here, not driven: the leadership team, then finance, HR, IT and legal as the company grows. Same in both cases')
 line(PE, 18, 'Field service engineers', 'FTE',
      lambda cl, i: f'=ROUND({RFY}!{cl}41*{LV("svc_attach")}/{LV("visits_tech")},0)',
      annual='end',
@@ -1109,7 +1107,7 @@ def h_line(row, left, right, lfont=None, lfill=None):
     r = HR.cell(row, 3, right); r.font = f(); r.alignment = L
 
 h_bar(3, 'COLOUR CODING')
-h_line(4, 'Sample', 'Hardcoded input. These are the only cells to change, and they all live on Assumptions.',
+h_line(4, 'Sample', 'Hardcoded input. These are the only cells to change. They live on Assumptions, plus the back-office headcount row on Personnel.',
        f(bold=True), FILL_INPUT)
 h_line(5, 'Sample', 'Calculated cell. Do not type over these.', f(bold=True))
 h_line(6, 'Sample', 'Subtotal or total row.', f(bold=True), FILL_SUB)
@@ -1119,7 +1117,7 @@ h_line(9, 'Sample', 'Check row. Must read nil.', f(bold=True, color=CHECK_GREY))
 
 h_bar(12, 'HOW THE MODEL FITS TOGETHER')
 for r, txt in enumerate([
-    'Assumptions   ->   every other tab. Nothing is hardcoded anywhere else.',
+    'Assumptions   ->   every other tab. The only other typed numbers are the back-office headcount on Personnel and the committed 2026 plan on OPEX.',
     'Revenue Forecast   ->   COGS, OPEX, Personnel, Financial Statements.',
     'Personnel   ->   OPEX   ->   Financial Statements.',
     'Everything   ->   Dashboard.',
