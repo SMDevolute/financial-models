@@ -69,7 +69,7 @@ rep_s = n(live('Reps in post at Jan-2026')); quota = n(live('Quota per rep'))
 ptr_s = n(live('Installer partners at Jan-2026'))
 per_ptr = n(live('Units per partner per month'))
 comm = n(live('Installer partner commission, share of boiler price'))
-ptr_ord = n(live('Orders an installer partner brings in per month'))
+ptr_ord = yearvals('Orders an installer partner brings in per month')
 ptr_pm  = n(live('Partners per partner manager'))
 pcap = n(live('Assembly partner capacity'))
 line1 = dat('In-house line 1 producing from'); line2 = dat('In-house line 2 producing from')
@@ -118,7 +118,7 @@ for key, row in (('p_rnd', 38), ('p_sm', 39), ('p_ga', 40),
 
 def xround(x):
     """Excel ROUND: half away from zero, unlike Python's round to even."""
-    return math.floor(abs(x) + 0.5) * (1 if x >= 0 else -1)
+    return math.floor(abs(x) + 0.5 + 1e-9) * (1 if x >= 0 else -1)
 
 def md(i): return dt.date(2026 + i // 12, i % 12 + 1, 1)
 def yr(i): return 2026 + i // 12
@@ -164,7 +164,7 @@ for _pass in range(3):
         S['ptr_h'][i] = 0.0 if d < sell_from else ptradd[y]
         S['ptr_hc'][i] = (ptr_s + S['ptr_h'][i]) if i == 0 else S['ptr_hc'][i-1] + S['ptr_h'][i]
         S['ccap'][i] = S['ptr_hc'][i]*per_ptr
-        S['demand_p'][i] = S['ptr_hc'][i]*ptr_ord
+        S['demand_p'][i] = S['ptr_hc'][i]*ptr_ord[y]
         S['demand'][i] = S['demand_f'][i] + S['demand_p'][i]
         ds = S['direct'][i]
         a = S['dcap'][i]/ds if ds else 1_000_000

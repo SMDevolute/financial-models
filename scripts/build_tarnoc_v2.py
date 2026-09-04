@@ -405,8 +405,8 @@ a_calc('svc_attach', 'Share of the installed base on a contract', '%',
 # ---- demand funnel --------------------------------------------------------
 a_bar('DEMAND  (marketing spend runs the funnel)')
 a_yeartable('mkt', 'Marketing spend', 'EUR/month',
-            [0, 12000, 29000, 54000, 95000],
-            [0, 55000, 165000, 250000, 385000], EUR,
+            [0, 28000, 55000, 80000, 110000],
+            [0, 95000, 250000, 330000, 430000], EUR,
             'fills the demand the installer partners do not bring in themselves; spend more, generate more orders')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
 a_single('cpl', 'Cost per lead', 'EUR', 120, 120, EUR,
@@ -428,9 +428,13 @@ a_yeartable('rep_add', 'Reps hired per month', 'FTE/month',
             [0.0, 1.25, 1.00, 0.60, 0.60], NUM2,
             'sales hiring starts in the first month we can sell, so 2026 is nil')
 a_yeartable('ptr_add', 'Installer partners signed per month', 'partners/month',
-            [0.0, 1.0, 2.0, 3.0, 3.8],
-            [0.0, 3.5, 6.0, 9.0, 11.0], NUM1,
-            'same gate: no partner intros before the first month we can sell')
+            [0.0, 0.5, 1.5, 3.0, 3.8],
+            [0.0, 2.0, 5.0, 9.0, 11.0], NUM1,
+            'same gate: no partner intros before the first month we can sell; the network takes time to build')
+a_yeartable('ptr_orders', 'Orders an installer partner brings in per month', 'units/month',
+            [0, 1, 2, 3, 4],
+            [0, 1, 2, 3, 4], NUM,
+            'customers the installer finds on their own jobs, rising as the brand becomes known; these add to demand')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
 a_single('rep_start', 'Reps in post at Jan-2026', 'FTE', 1, 1, NUM1)
 a_single('quota', 'Quota per rep', 'units/month', 20, 20,
@@ -440,8 +444,6 @@ a_single('per_ptr', 'Units per partner per month', 'units/month', 8, 8,
          note='a partner sells full volume from the month they are signed')
 a_single('ptr_comm', 'Installer partner commission, share of boiler price', '%', 0.10, 0.10, PCT,
          note='paid on every unit sold through the channel, on the boiler price only, not on installation or upsell')
-a_single('ptr_orders', 'Orders an installer partner brings in per month', 'units/month', 4, 4,
-         note='customers the installer finds on their own jobs; these add to demand, the rest of the 8 a partner can sell is filled from marketing leads')
 a_single('ptr_per_pm', 'Partners per partner manager', 'partners', 18, 18)
 print(f'assumptions: upsell through selling, rows 4..{_ar-1}')
 
@@ -569,7 +571,7 @@ line(RF, 9, 'Qualified leads', 'leads',
 line(RF, 10, 'Orders the funnel generates', 'units',
      lambda cl, i: f'={cl}9*{LV("q2w")}')
 line(RF, 11, 'Orders installer partners bring in', 'units',
-     lambda cl, i: f'={cl}20*{LV("ptr_orders")}',
+     lambda cl, i: f'={cl}20*' + YL('ptr_orders', cl),
      note='partners on the books times the orders each finds on their own jobs')
 line(RF, 12, 'Demand', 'units', lambda cl, i: f'={cl}10+{cl}11', total=True)
 
