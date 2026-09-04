@@ -670,8 +670,8 @@ bar(CG, 5, 'VOLUME TIER')
 line(CG, 6, 'Units sold this calendar year', 'units',
      lambda cl, i: f'=IFERROR(HLOOKUP(YEAR({cl}$3),{YRNG},32,FALSE),0)', annual='end')
 line(CG, 7, 'Units sold next calendar year', 'units',
-     lambda cl, i: f'=IFERROR(HLOOKUP(YEAR({cl}$3)+1,{YRNG},32,FALSE),0)', annual='end',
-     note='only used when the tier basis switch is set to 2')
+     lambda cl, i: f'=IFERROR(HLOOKUP(YEAR({cl}$3)+1,{YRNG},32,FALSE),{cl}6)', annual='end',
+     note='only used when the tier basis switch is set to 2; beyond the horizon, next year is taken as at least this year')
 line(CG, 8, 'Tier key', 'units',
      lambda cl, i: f'=IF({TIER}=2,{cl}6+{cl}7,{cl}6)', total=True, annual='end')
 line(CG, 9, 'Turbineketel cost per unit', 'EUR/unit',

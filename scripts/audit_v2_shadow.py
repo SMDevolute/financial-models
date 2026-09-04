@@ -194,7 +194,7 @@ for i in range(NM):
     S['r_grant'][i] = grant_a if d == grant_d else 0.0
     S['r_tot'][i] = sum(S[k][i] for k in ('r_ttk','r_cmb','r_ups','r_ins','r_svc','r_grant'))
     S['uy'][i] = ANN.get(y, 0.0)
-    S['uny'][i] = ANN.get(y+1, 0.0)
+    S['uny'][i] = ANN.get(y+1, S['uy'][i])
     S['tkey'][i] = S['uy'][i] + S['uny'][i] if tier_basis == 2 else S['uy'][i]
     S['c_ttk_u'][i] = vlook(S['tkey'][i], 1)
     S['c_odu_u'][i] = vlook(S['tkey'][i], 2)
