@@ -326,7 +326,7 @@ a_bar('GENERAL')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
 a_single('open_cash', 'Opening cash at Jan-2026', 'EUR', 853120, 853120, EUR,
          'the actual balance carried into January 2026')
-a_single('sal_infl', 'Annual salary increase', '%', 0.08, 0.08, PCT)
+a_single('sal_infl', 'Annual salary increase', '%', 0.05, 0.05, PCT)
 a_single('tax', 'Corporate income tax rate', '%', 0.258, 0.258, PCT,
          'losses are carried forward until profits absorb them')
 a_single('loan_rate', 'Interest on the working capital loan', '%', 0.05, 0.05, PCT)
@@ -405,14 +405,12 @@ a_calc('svc_attach', 'Share of the installed base on a contract', '%',
 # ---- demand funnel --------------------------------------------------------
 a_bar('DEMAND  (marketing spend runs the funnel)')
 a_yeartable('mkt', 'Marketing spend', 'EUR/month',
-            [0, 28000, 55000, 80000, 110000],
-            [0, 95000, 250000, 330000, 430000], EUR,
+            [0, 28000, 70000, 120000, 170000],
+            [0, 90000, 190000, 265000, 300000], EUR,
             'fills the demand the installer partners do not bring in themselves; spend more, generate more orders')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
 a_single('cpl', 'Cost per lead', 'EUR', 120, 120, EUR,
          'EUR120 a lead at a 20% close rate is EUR600 of marketing per customer')
-a_single('cpl_down', 'Cost per lead improvement per doubling of installed base',
-         '%', 0.10, 0.10, PCT, 'brand, referral and installer pull make leads cheaper over time')
 a_single('l2q', 'Lead to qualified', '%', 0.50, 0.50, PCT)
 a_single('q2w', 'Qualified to won', '%', 0.40, 0.40, PCT,
          '50% then 40% is a 20% lead to sale rate, in line with high-intent HVAC leads')
@@ -420,16 +418,16 @@ a_single('q2w', 'Qualified to won', '%', 0.40, 0.40, PCT,
 # ---- selling motion -------------------------------------------------------
 a_bar('SELLING CAPACITY  (own reps early, installer channel at scale)')
 a_yeartable('direct', 'Share of units sold direct', '%',
-            [1.00, 0.80, 0.60, 0.45, 0.35],
-            [1.00, 0.70, 0.40, 0.22, 0.15], PCT,
-            'the business change: selling shifts from our own reps to trained installers')
+            [1.00, 0.80, 0.50, 0.35, 0.30],
+            [1.00, 0.80, 0.50, 0.35, 0.30], PCT,
+            'direct to consumer first, installers brought in from 2027, half the volume by 2028 and installer-led from 2029')
 a_yeartable('rep_add', 'Reps hired per month', 'FTE/month',
             [0.0, 0.25, 0.25, 0.25, 0.25],
-            [0.0, 1.25, 1.00, 0.60, 0.60], NUM2,
+            [0.0, 1.00, 0.75, 0.25, 0.25], NUM2,
             'sales hiring starts in the first month we can sell, so 2026 is nil')
 a_yeartable('ptr_add', 'Installer partners signed per month', 'partners/month',
             [0.0, 0.5, 1.5, 3.0, 3.8],
-            [0.0, 2.0, 5.0, 9.0, 11.0], NUM1,
+            [0.0, 2.0, 4.0, 6.0, 7.0], NUM1,
             'same gate: no partner intros before the first month we can sell; the network takes time to build')
 a_yeartable('ptr_orders', 'Orders an installer partner brings in per month', 'units/month',
             [0, 1, 2, 3, 4],
@@ -556,10 +554,9 @@ line(RF, 6, 'Marketing spend', 'EUR/mo', lambda cl, i: '=' + YL('mkt', cl),
      EUR, 'link', note='from the Assumptions year table, per the case switch')
 line(RF, 7, 'Installed base at start of month', 'units',
      lambda cl, i: '=0' if i == 0 else f'={MC[i-1]}41', annual='end')
-line(RF, 8, 'Cost per lead, effective', 'EUR',
-     lambda cl, i: (f'={LV("cpl")}*(1-{LV("cpl_down")})^'
-                    f'IF({cl}7<250,0,LOG({cl}7/250,2))'), EUR, annual='avg',
-     note='leads get cheaper as the installed base doubles, from brand and referral')
+line(RF, 8, 'Cost per lead', 'EUR',
+     lambda cl, i: f'={LV("cpl")}', EUR, 'link', annual='avg',
+     note='held flat: marketing per unit only falls as installers bring in more of the orders')
 line(RF, 9, 'Qualified leads', 'leads',
      lambda cl, i: f'=IFERROR({cl}6/{cl}8,0)*{LV("l2q")}',
      note='marketing spend divided by cost per lead, then the lead to qualified rate')

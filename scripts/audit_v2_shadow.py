@@ -60,7 +60,6 @@ svc_c = n(live('Service cost per installed unit per year'))
 svc_a = n(live('Share of the installed base on a contract'))
 mkt   = yearvals('Marketing spend')
 cpl   = n(live('Cost per lead'))
-cpld  = n(live('Cost per lead improvement per doubling of installed base'))
 l2q   = n(live('Lead to qualified')); q2w = n(live('Qualified to won'))
 direct = yearvals('Share of units sold direct')
 repadd = yearvals('Reps hired per month')
@@ -151,7 +150,7 @@ for _pass in range(3):
         S['spend'][i] = mkt[y]
         S['ib_open'][i] = 0.0 if i == 0 else S['ib_close'][i-1]
         ibo = S['ib_open'][i]
-        S['cpl_eff'][i] = cpl * (1 - cpld) ** (0 if ibo < 250 else math.log(ibo/250, 2))
+        S['cpl_eff'][i] = cpl
         S['leads'][i] = S['spend'][i]/S['cpl_eff'][i] if S['cpl_eff'][i] else 0.0
         S['sql'][i] = S['leads'][i]*l2q
         S['demand_f'][i] = S['sql'][i]*q2w
