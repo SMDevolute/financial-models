@@ -241,7 +241,7 @@ def a_switch(key, lbl, value, note=None):
 
 # the two switches come first so their addresses are fixed and quotable
 a_bar('SCENARIO SWITCHES')
-CASE_ROW = a_switch('case', 'Case   1 = Base (EUR3m raise),  2 = Aggressive (EUR10m raise)', 2,
+CASE_ROW = a_switch('case', 'Case   1 = Base (EUR3m raise),  2 = Aggressive (EUR10m raise)', 1,
                     'the master switch. Every Live column on this tab reads it')
 TIER_ROW = a_switch('tier_basis',
                     'BOM tier basis   1 = this year only,  2 = this year plus next', 1,
