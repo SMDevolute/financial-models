@@ -438,6 +438,8 @@ a_single('quota', 'Quota per rep', 'units/month', 20, 20,
 a_single('ptr_start', 'Installer partners at Jan-2026', 'partners', 1, 1, NUM1)
 a_single('per_ptr', 'Units per partner per month', 'units/month', 8, 8,
          note='a partner sells full volume from the month they are signed')
+a_single('ptr_comm', 'Installer partner commission, share of boiler price', '%', 0.10, 0.10, PCT,
+         note='paid on every unit sold through the channel, on the boiler price only, not on installation or upsell')
 a_single('ptr_per_pm', 'Partners per partner manager', 'partners', 18, 18)
 print(f'assumptions: upsell through selling, rows 4..{_ar-1}')
 
@@ -685,10 +687,13 @@ line(CG, 16, 'Installation (pass-through)', 'EUR', lambda cl, i: f'={RFY}!{cl}47
 line(CG, 17, 'Service delivery', 'EUR',
      lambda cl, i: f'={RFY}!{cl}7*{LV("svc_cost")}/12', EUR,
      note='parts, consumables and travel per contract, from the service table; the engineers are on Personnel')
-line(CG, 18, 'Total cost of goods sold', 'EUR',
-     lambda cl, i: f'=SUM({cl}13:{cl}17)', EUR, grand=True)
-line(CG, 20, 'Gross profit per unit', 'EUR/unit',
-     lambda cl, i: f'=IFERROR(({RFY}!{cl}50-{cl}18)/{RFY}!{cl}34,0)', EUR, 'ratio',
+line(CG, 18, 'Installer partner commission', 'EUR',
+     lambda cl, i: f'=({RFY}!{cl}44+{RFY}!{cl}45)*(1-{RFY}!{cl}15)*{LV("ptr_comm")}', EUR,
+     note='boiler revenue on the channel share of units, times the commission rate')
+line(CG, 19, 'Total cost of goods sold', 'EUR',
+     lambda cl, i: f'=SUM({cl}13:{cl}18)', EUR, grand=True)
+line(CG, 21, 'Gross profit per unit', 'EUR/unit',
+     lambda cl, i: f'=IFERROR(({RFY}!{cl}50-{cl}19)/{RFY}!{cl}34,0)', EUR, 'ratio',
      annual='avg')
 
 # ===========================================================================
@@ -849,7 +854,7 @@ datebar(FS)
 
 bar(FS, 5, 'PROFIT AND LOSS')
 line(FS, 6, 'Revenue', 'EUR', lambda cl, i: f'={RFY}!{cl}50', EUR, 'link')
-line(FS, 7, 'Cost of goods sold', 'EUR', lambda cl, i: f'=-COGS!{cl}18', EUR, 'link')
+line(FS, 7, 'Cost of goods sold', 'EUR', lambda cl, i: f'=-COGS!{cl}19', EUR, 'link')
 line(FS, 8, 'Gross profit', 'EUR', lambda cl, i: f'={cl}6+{cl}7', EUR, grand=True)
 line(FS, 9, 'Gross margin', '%', lambda cl, i: f'=IFERROR({cl}8/{cl}6,0)', PCT1,
      'ratio', annual='avg')
