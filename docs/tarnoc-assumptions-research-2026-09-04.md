@@ -4,6 +4,8 @@ Date: 2026-09-04. Five research passes (channel, marketing, service, manufacturi
 
 "Mine" means an assumption Claude introduced when rebuilding the model. "Client" means it was carried over from the client's original workbook; those are flagged, not changed.
 
+**Correction, 2026-09-04.** The research briefs below describe the turbineketel as "a novel residential gas boiler" and the Combi+ as "a hybrid boiler plus outdoor unit". That is wrong. The turbineketel is a turbine heat pump that replaces a gas boiler one-for-one; the Combi+ adds an outdoor unit. Two verdicts depend on that framing and should be read with the correction: the "hybrid priced 2-3x the Dutch hybrid anchor" remark in the marketing section compares against the wrong products (against installed heat pumps at EUR10,000-15,000 the turbineketel at EUR8,526 plus EUR2,800 installation is competitively priced), and the lead-to-order conversion benchmarks are drawn from cheaper products, so the "looks high" verdict on the 20% close rate is weaker than stated. The service-visit, staffing, manufacturing, working-capital and people-cost verdicts do not depend on the product framing.
+
 ## Summary of verdicts
 
 | Area | Assumption | Model | Whose | Verdict | Evidence says |

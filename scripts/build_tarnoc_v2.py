@@ -440,8 +440,8 @@ a_single('quota', 'Quota per rep', 'units/month', 20, 20,
 a_single('ptr_start', 'Installer partners at Jan-2026', 'partners', 1, 1, NUM1)
 a_single('per_ptr', 'Units per partner per month', 'units/month', 8, 8,
          note='a partner sells full volume from the month they are signed')
-a_single('ptr_comm', 'Installer partner commission, share of boiler price', '%', 0.10, 0.10, PCT,
-         note='paid on every unit sold through the channel, on the boiler price only, not on installation or upsell')
+a_single('ptr_comm', 'Installer partner commission, share of unit price', '%', 0.10, 0.10, PCT,
+         note='paid on every unit sold through the channel, on the turbineketel or Combi+ system price only, not on installation, upsell or service')
 a_single('ptr_per_pm', 'Partners per partner manager', 'partners', 18, 18)
 print(f'assumptions: upsell through selling, rows 4..{_ar-1}')
 
@@ -495,8 +495,8 @@ a_single('ptr_per_tr', 'New partners per year per installer trainer', 'partners'
 a_single('u_per_desk', 'Units per order desk FTE', 'units/yr', 3000, 3000)
 a_single('mkt_per_fte', 'Marketing spend per marketer', 'EUR/yr', 3000000, 3000000, EUR)
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
-a_single('visits_tech', 'Boilers one field engineer can look after', 'boilers', 750, 750,
-         note='sizes the field service team: boilers on a service contract divided by this number = engineers to hire. Each boiler gets one visit a year, an engineer does three to four a day')
+a_single('visits_tech', 'Installed units one field engineer can look after', 'units', 750, 750,
+         note='sizes the field service team: units on a service contract divided by this number = engineers to hire. Each unit gets one visit a year, an engineer does three to four a day')
 
 a_bar('LOADED COST PER PERSON  (employer cost, including taxes)')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
@@ -687,7 +687,7 @@ line(CG, 17, 'Service delivery', 'EUR',
      note='parts, consumables and travel per contract, from the service table; the engineers are on Personnel')
 line(CG, 18, 'Installer partner commission', 'EUR',
      lambda cl, i: f'=({RFY}!{cl}44+{RFY}!{cl}45)*(1-{RFY}!{cl}15)*{LV("ptr_comm")}', EUR,
-     note='boiler revenue on the channel share of units, times the commission rate')
+     note='turbineketel and Combi+ revenue on the channel share of units, times the commission rate')
 line(CG, 19, 'Total cost of goods sold', 'EUR',
      lambda cl, i: f'=SUM({cl}13:{cl}18)', EUR, grand=True)
 line(CG, 21, 'Gross profit per unit', 'EUR/unit',
@@ -738,7 +738,7 @@ line(PE, 17, 'Leadership, finance, HR, IT and legal', 'FTE',
 line(PE, 18, 'Field service engineers', 'FTE',
      lambda cl, i: f'=ROUND({RFY}!{cl}41*{LV("svc_attach")}/{LV("visits_tech")},0)',
      annual='end',
-     note='salaried staff: boilers on a service contract divided by the boilers one engineer can look after')
+     note='salaried staff: installed units on a service contract divided by the units one engineer can look after')
 line(PE, 19, 'Operations, support and administration', 'FTE',
      lambda cl, i: f'=SUM({cl}12:{cl}18)', NUM1, total=True, annual='end')
 line(PE, 20, 'Total headcount', 'FTE', lambda cl, i: f'={cl}11+{cl}19', NUM1,
