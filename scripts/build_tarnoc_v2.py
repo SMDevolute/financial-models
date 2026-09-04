@@ -405,9 +405,9 @@ a_calc('svc_attach', 'Share of the installed base on a contract', '%',
 # ---- demand funnel --------------------------------------------------------
 a_bar('DEMAND  (marketing spend runs the funnel)')
 a_yeartable('mkt', 'Marketing spend', 'EUR/month',
-            [0, 30000, 72000, 136000, 236000],
-            [0, 100000, 300000, 450000, 700000], EUR,
-            'the throttle on the whole model: spend more, generate more orders')
+            [0, 12000, 29000, 54000, 95000],
+            [0, 55000, 165000, 250000, 385000], EUR,
+            'fills the demand the installer partners do not bring in themselves; spend more, generate more orders')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
 a_single('cpl', 'Cost per lead', 'EUR', 120, 120, EUR,
          'EUR120 a lead at a 20% close rate is EUR600 of marketing per customer')
@@ -440,6 +440,8 @@ a_single('per_ptr', 'Units per partner per month', 'units/month', 8, 8,
          note='a partner sells full volume from the month they are signed')
 a_single('ptr_comm', 'Installer partner commission, share of boiler price', '%', 0.10, 0.10, PCT,
          note='paid on every unit sold through the channel, on the boiler price only, not on installation or upsell')
+a_single('ptr_orders', 'Orders an installer partner brings in per month', 'units/month', 4, 4,
+         note='customers the installer finds on their own jobs; these add to demand, the rest of the 8 a partner can sell is filled from marketing leads')
 a_single('ptr_per_pm', 'Partners per partner manager', 'partners', 18, 18)
 print(f'assumptions: upsell through selling, rows 4..{_ar-1}')
 
@@ -561,13 +563,15 @@ line(RF, 8, 'Cost per lead, effective', 'EUR',
      lambda cl, i: (f'={LV("cpl")}*(1-{LV("cpl_down")})^'
                     f'IF({cl}7<250,0,LOG({cl}7/250,2))'), EUR, annual='avg',
      note='leads get cheaper as the installed base doubles, from brand and referral')
-line(RF, 9, 'Leads', 'leads', lambda cl, i: f'=IFERROR({cl}6/{cl}8,0)')
-line(RF, 10, 'Qualified leads', 'leads', lambda cl, i: f'={cl}9*{LV("l2q")}')
-line(RF, 11, 'Orders the funnel generates', 'units',
-     lambda cl, i: f'={cl}10*{LV("q2w")}', total=True)
-line(RF, 12, 'Marketing cost per unit sold', 'EUR/unit',
-     lambda cl, i: f'=IFERROR({cl}6/{cl}34,0)', EUR, 'ratio', annual='avg',
-     note='should sit near the EUR600 a customer that the pricing assumes')
+line(RF, 9, 'Qualified leads', 'leads',
+     lambda cl, i: f'=IFERROR({cl}6/{cl}8,0)*{LV("l2q")}',
+     note='marketing spend divided by cost per lead, then the lead to qualified rate')
+line(RF, 10, 'Orders the funnel generates', 'units',
+     lambda cl, i: f'={cl}9*{LV("q2w")}')
+line(RF, 11, 'Orders installer partners bring in', 'units',
+     lambda cl, i: f'={cl}20*{LV("ptr_orders")}',
+     note='partners on the books times the orders each finds on their own jobs')
+line(RF, 12, 'Demand', 'units', lambda cl, i: f'={cl}10+{cl}11', total=True)
 
 bar(RF, 14, 'SELLING CAPACITY')
 line(RF, 15, 'Share sold direct', '%', lambda cl, i: '=' + YL('direct', cl),
@@ -612,7 +616,7 @@ line(RF, 31, 'Build capacity', 'units/mo', lambda cl, i: f'={cl}28+{cl}30', tota
 bar(RF, 33, 'UNITS SOLD')
 line(RF, 34, 'Units sold', 'units',
      lambda cl, i: (f'=IF({cl}$3<{LV("sell_from")},0,'
-                    f'ROUND(MIN({cl}11,{cl}22,{cl}31),0))'), grand=True,
+                    f'ROUND(MIN({cl}12,{cl}22,{cl}31),0))'), grand=True,
      note='nil until the first month we can sell, then the smallest of demand, selling and build capacity')
 line(RF, 35, 'Build capacity used', '%',
      lambda cl, i: f'=IFERROR({cl}34/{cl}31,0)', PCT, 'ratio', annual='avg')
@@ -999,7 +1003,8 @@ d_line(6, 'Units sold', lambda y: yc('Revenue Forecast', 34, y), total=True)
 d_line(7, 'Installed base at year end', lambda y: yc('Revenue Forecast', 41, y))
 d_line(8, 'Build capacity used', lambda y: yc('Revenue Forecast', 35, y), PCT1, 'ratio')
 d_line(9, 'Installer partners at year end', lambda y: yc('Revenue Forecast', 20, y), NUM1)
-d_line(10, 'Marketing cost per unit sold', lambda y: yc('Revenue Forecast', 12, y), EUR)
+d_line(10, 'Marketing cost per unit sold',
+       lambda y: f"=IFERROR('Revenue Forecast'!{YC[y]}6/'Revenue Forecast'!{YC[y]}34,0)", EUR)
 
 d_bar(13, 'PROFIT AND LOSS')
 d_line(14, 'Revenue', lambda y: yc('Financial Statements', 6, y), EUR, total=True)
@@ -1133,7 +1138,7 @@ HR.cell(20, 3, f'Assumptions row {TIER_ROW}, cell E{TIER_ROW}. BOM tier basis: 1
 h_bar(22, 'HOW UNITS SOLD IS DECIDED')
 for r, txt in enumerate([
     'Units sold is not typed in. Three numbers are worked out for every month and the smallest one wins:',
-    '    1.  Orders the funnel generates.  Marketing spend divided by cost per lead, then through the two conversion rates.',
+    '    1.  Demand.  Marketing spend divided by cost per lead, through the two conversion rates, plus the orders installer partners bring in on their own jobs.',
     '    2.  What we can sell.  Our own reps times quota, plus installer partners times units each, capped by the direct and channel mix. No ramp-up: reps and partners sell at full rate from the month they join.',
     '    3.  What we can build.  The assembly partner, plus any in-house line that is producing.',
     'There is no market size or market share anywhere in the model.',

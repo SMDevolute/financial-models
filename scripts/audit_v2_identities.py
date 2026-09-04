@@ -79,7 +79,7 @@ chk('tax losses carried forward never negative',lambda i:(F64[i]>=-T,''))
 chk('equity raised never negative',lambda i:(F35[i]>=-T,''))
 
 print('\n=== OPERATING LOGIC ===')
-R11,R24,R31,R34,R16,R20,R47,R41=[row(RF,x) for x in (11,22,31,34,16,19,47,41)]
+R11,R24,R31,R34,R16,R20,R47,R41=[row(RF,x) for x in (12,22,31,34,16,19,47,41)]
 C16=row(CG,16)
 AS_lbl={}
 for rr in range(1,200):

@@ -69,6 +69,7 @@ rep_s = n(live('Reps in post at Jan-2026')); quota = n(live('Quota per rep'))
 ptr_s = n(live('Installer partners at Jan-2026'))
 per_ptr = n(live('Units per partner per month'))
 comm = n(live('Installer partner commission, share of boiler price'))
+ptr_ord = n(live('Orders an installer partner brings in per month'))
 ptr_pm  = n(live('Partners per partner manager'))
 pcap = n(live('Assembly partner capacity'))
 line1 = dat('In-house line 1 producing from'); line2 = dat('In-house line 2 producing from')
@@ -133,7 +134,7 @@ def vlook(key, col):
 
 # ---- the shadow model -----------------------------------------------------
 S = {k: [0.0] * NM for k in (
-    'spend','ib_open','cpl_eff','leads','sql','demand','direct','rep_h','rep_hc',
+    'spend','ib_open','cpl_eff','leads','sql','demand_f','demand_p','demand','direct','rep_h','rep_hc',
     'dcap','ptr_h','ptr_hc','ccap','scap','pm','pcap','lines','icap','bcap',
     'units','ttk_u','cmb_u','ib_close','r_ttk','r_cmb','r_ups','r_ins','r_svc','r_grant',
     'r_tot','uy','uny','tkey','c_ttk_u','c_odu_u','c_ttk','c_cmb','c_ups','c_ins','c_svc',
@@ -155,7 +156,7 @@ for _pass in range(3):
         S['cpl_eff'][i] = cpl * (1 - cpld) ** (0 if ibo < 250 else math.log(ibo/250, 2))
         S['leads'][i] = S['spend'][i]/S['cpl_eff'][i] if S['cpl_eff'][i] else 0.0
         S['sql'][i] = S['leads'][i]*l2q
-        S['demand'][i] = S['sql'][i]*q2w
+        S['demand_f'][i] = S['sql'][i]*q2w
         S['direct'][i] = direct[y]
         S['rep_h'][i] = 0.0 if d < sell_from else repadd[y]
         S['rep_hc'][i] = (rep_s + S['rep_h'][i]) if i == 0 else S['rep_hc'][i-1] + S['rep_h'][i]
@@ -163,6 +164,8 @@ for _pass in range(3):
         S['ptr_h'][i] = 0.0 if d < sell_from else ptradd[y]
         S['ptr_hc'][i] = (ptr_s + S['ptr_h'][i]) if i == 0 else S['ptr_hc'][i-1] + S['ptr_h'][i]
         S['ccap'][i] = S['ptr_hc'][i]*per_ptr
+        S['demand_p'][i] = S['ptr_hc'][i]*ptr_ord
+        S['demand'][i] = S['demand_f'][i] + S['demand_p'][i]
         ds = S['direct'][i]
         a = S['dcap'][i]/ds if ds else 1_000_000
         b = S['ccap'][i]/(1-ds) if (1-ds) else 1_000_000
@@ -285,7 +288,8 @@ for i in range(NM):
 # ---- compare -------------------------------------------------------------
 CHECKS = [
  ('RF spend',RF,6,'spend'),('RF ib open',RF,7,'ib_open'),('RF cpl',RF,8,'cpl_eff'),
- ('RF leads',RF,9,'leads'),('RF qualified',RF,10,'sql'),('RF demand',RF,11,'demand'),
+ ('RF qualified',RF,9,'sql'),('RF funnel orders',RF,10,'demand_f'),
+ ('RF partner orders',RF,11,'demand_p'),('RF demand',RF,12,'demand'),
  ('RF direct share',RF,15,'direct'),('RF reps hired',RF,16,'rep_h'),
  ('RF reps in post',RF,17,'rep_hc'),('RF direct cap',RF,18,'dcap'),
  ('RF ptr signed',RF,19,'ptr_h'),('RF ptr on books',RF,20,'ptr_hc'),
