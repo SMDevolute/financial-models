@@ -90,12 +90,11 @@ ib_esc = n(live('Installed units per technical escalation FTE'))
 ptr_tr = n(live('New partners per year per installer trainer'))
 u_desk = n(live('Units per order desk FTE'))
 mkt_fte = n(live('Marketing spend per marketer'))
-per_ga = n(live('Staff per G&A FTE'))
 visits = n(live('Service visits per engineer per year'))
 rnd_s = n(live('R&D engineers carried into 2027')); mkt_base = n(live('Marketing team floor'))
 rndadd = yearvals('R&D engineers hired in the year')
 qa_y   = yearvals('Quality and certification team')
-core_y = yearvals('Leadership and administration, core team')
+core_y = yearvals('Leadership, finance, HR, IT and legal')
 c_rep = n(live('Sales rep')); c_pm = n(live('Partner manager'))
 c_comm = n(live('Trainer, order desk, marketing')); c_ops = n(live('Supply chain and production'))
 c_sup = n(live('Support and escalation')); c_ga = n(live('Quality, certification and G&A'))
@@ -138,7 +137,7 @@ S = {k: [0.0] * NM for k in (
     'units','ttk_u','cmb_u','ib_close','r_ttk','r_cmb','r_ups','r_ins','r_svc','r_grant',
     'r_tot','uy','uny','tkey','c_ttk_u','c_odu_u','c_ttk','c_cmb','c_ups','c_ins','c_svc',
     'c_warr','c_tot','hc_rep','hc_pm','hc_tr','hc_desk','hc_mkt','hc_sm','hc_sc','hc_op',
-    'hc_sup','hc_esc','hc_qa','hc_rnd','hc_core','hc_ga','hc_ops','hc_pay','hc_tech','hc_tot',
+    'hc_sup','hc_esc','hc_qa','hc_rnd','hc_core','hc_ops','hc_pay','hc_tech','hc_tot',
     'pc_rnd','pc_sm','pc_ga','pc_tot','o6','o7','o8','o12','o13','o14','o17','o18','o19',
     'o22','o23','o24','o25','o26','o27','o30','o31','o32','o33','f6','f7','f8','f11','f12',
     'f13','f14','f16','f19','f20','f21','f22','f23','f29','f30','f31','f32','f33','f35',
@@ -214,9 +213,7 @@ for i in range(NM):
     S['hc_qa'][i] = qa_y[y]
     S['hc_rnd'][i] = rnd_s + sum(rndadd[k] for k in YEARS if k <= y)
     S['hc_core'][i] = core_y[y]
-    base_ga = S['hc_sm'][i] + sum(S[k][i] for k in ('hc_sc','hc_op','hc_sup','hc_esc','hc_qa','hc_rnd','hc_core'))
-    S['hc_ga'][i] = xround(base_ga/per_ga)
-    S['hc_ops'][i] = sum(S[k][i] for k in ('hc_sc','hc_op','hc_sup','hc_esc','hc_qa','hc_rnd','hc_core','hc_ga'))
+    S['hc_ops'][i] = sum(S[k][i] for k in ('hc_sc','hc_op','hc_sup','hc_esc','hc_qa','hc_rnd','hc_core'))
     S['hc_pay'][i] = S['hc_sm'][i] + S['hc_ops'][i]
     S['hc_tech'][i] = xround(S['ib_close'][i]*svc_a/visits)
     S['hc_tot'][i] = S['hc_pay'][i] + S['hc_tech'][i]
@@ -225,7 +222,7 @@ for i in range(NM):
                      + (S['hc_tr'][i]+S['hc_desk'][i]+S['hc_mkt'][i])*c_comm)*infl_s
     S['pc_ga'][i] = ((S['hc_sc'][i]+S['hc_op'][i])*c_ops
                      + (S['hc_sup'][i]+S['hc_esc'][i])*c_sup
-                     + (S['hc_qa'][i]+S['hc_core'][i]+S['hc_ga'][i])*c_ga)*infl_s
+                     + (S['hc_qa'][i]+S['hc_core'][i])*c_ga)*infl_s
     S['pc_tot'][i] = S['pc_rnd'][i]+S['pc_sm'][i]+S['pc_ga'][i]
     frozen = d <= freeze_to
     S['o6'][i] = FROZEN['p_rnd'][i] if frozen else S['pc_rnd'][i]
@@ -307,9 +304,9 @@ CHECKS = [
  ('PE order desk',PE,9,'hc_desk'),('PE marketing',PE,10,'hc_mkt'),('PE S&M hc',PE,11,'hc_sm'),
  ('PE supply chain',PE,12,'hc_sc'),('PE operators',PE,13,'hc_op'),
  ('PE support',PE,14,'hc_sup'),('PE escalation',PE,15,'hc_esc'),('PE quality',PE,16,'hc_qa'),
- ('PE R&D',PE,17,'hc_rnd'),('PE core',PE,18,'hc_core'),('PE G&A',PE,19,'hc_ga'),
- ('PE ops hc',PE,20,'hc_ops'),('PE payroll',PE,21,'hc_pay'),('PE techs',PE,22,'hc_tech'),
- ('PE total hc',PE,23,'hc_tot'),('PE cost R&D',PE,26,'pc_rnd'),('PE cost S&M',PE,27,'pc_sm'),
+ ('PE R&D',PE,17,'hc_rnd'),('PE core',PE,18,'hc_core'),
+ ('PE ops hc',PE,19,'hc_ops'),('PE payroll',PE,20,'hc_pay'),('PE techs',PE,21,'hc_tech'),
+ ('PE total hc',PE,22,'hc_tot'),('PE cost R&D',PE,26,'pc_rnd'),('PE cost S&M',PE,27,'pc_sm'),
  ('PE cost G&A',PE,28,'pc_ga'),('PE cost total',PE,29,'pc_tot'),
  ('OP people R&D',OP,6,'o6'),('OP people S&M',OP,7,'o7'),('OP people G&A',OP,8,'o8'),
  ('OP marketing',OP,12,'o12'),('OP enablement',OP,13,'o13'),('OP S&M other',OP,14,'o14'),

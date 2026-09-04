@@ -155,7 +155,7 @@ ok2=abs(d('D34'))<T
 print(f'  {"pass" if ok2 else "FAIL"}  balance sheet check headline is nil: {d("D34"):.6f}')
 if not ok2: fails.append('bs headline')
 for r,lbl in ((6,'units'),(14,'revenue'),(18,'EBITDA'),(25,'headcount'),(31,'cash')):
-    src={6:(RF,34),14:(FS,6),18:(FS,16),25:(PE,23),31:(FS,40)}[r]
+    src={6:(RF,34),14:(FS,6),18:(FS,16),25:(PE,22),31:(FS,40)}[r]
     bad=[y for y in YEARS if abs(n(DB[f'{gl(4+YEARS.index(y))}{r}'].value)
                                 -n(src[0][f'{YC[y]}{src[1]}'].value))>T]
     print(f'  {"pass" if not bad else "FAIL"}  dashboard {lbl} ties to its source sheet'

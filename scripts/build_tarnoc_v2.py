@@ -496,12 +496,10 @@ a_single('u_per_desk', 'Units per order desk FTE', 'units/yr', 3000, 3000)
 a_single('mkt_per_fte', 'Marketing spend per marketer', 'EUR/yr', 3000000, 3000000, EUR)
 a_yeartable('qa_team', 'Quality and certification team', 'FTE',
             [0, 1, 1, 1, 1], [0, 1, 2, 2, 2], NUM)
-a_yeartable('core_ga', 'Leadership and administration, core team', 'FTE',
-            [3, 3, 4, 4, 4], [3, 3, 4, 5, 5], NUM,
-            'the leadership team is in post by the end of 2026')
+a_yeartable('core_ga', 'Leadership, finance, HR, IT and legal', 'FTE',
+            [3, 4, 5, 6, 8], [3, 5, 10, 14, 18], NUM,
+            'the whole back office, typed per year: leadership in post by end 2026, then finance, HR, IT and legal as the company grows')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
-a_single('per_ga', 'Staff per G&A FTE', 'FTE', 9, 9,
-         note='finance, HR, IT, legal and office')
 a_single('visits_tech', 'Service visits per engineer per year', 'visits', 750, 750)
 
 a_bar('LOADED COST PER PERSON  (employer cost, including taxes)')
@@ -738,20 +736,18 @@ line(PE, 17, 'R&D engineers', 'FTE',
      lambda cl, i: (f'={LV("rnd_start")}+SUMIF(Assumptions!$D${yr_rnd}:$H${yr_rnd},'
                     f'"<="&YEAR({cl}$3),Assumptions!$D${lv_rnd}:$H${lv_rnd})'),
      annual='end', note='the founding engineers plus everyone hired up to and including this year')
-line(PE, 18, 'Leadership and administration', 'FTE',
+line(PE, 18, 'Leadership, finance, HR, IT and legal', 'FTE',
      lambda cl, i: '=' + YL('core_ga', cl), kind='link', annual='end',
-     note='a part-time finance lead in 2026, then the full leadership team once funded')
-line(PE, 19, 'Finance, HR, IT and legal', 'FTE',
-     lambda cl, i: f'=ROUND(({cl}11+SUM({cl}12:{cl}18))/{LV("per_ga")},0)', annual='end')
-line(PE, 20, 'Operations, support and administration', 'FTE',
-     lambda cl, i: f'=SUM({cl}12:{cl}19)', NUM1, total=True, annual='end')
-line(PE, 21, 'Total on payroll', 'FTE', lambda cl, i: f'={cl}11+{cl}20', NUM1,
+     note='the whole back office, typed per year on Assumptions')
+line(PE, 19, 'Operations, support and administration', 'FTE',
+     lambda cl, i: f'=SUM({cl}12:{cl}18)', NUM1, total=True, annual='end')
+line(PE, 20, 'Total on payroll', 'FTE', lambda cl, i: f'={cl}11+{cl}19', NUM1,
      total=True, annual='end')
-line(PE, 22, 'Field service engineers', 'FTE',
+line(PE, 21, 'Field service engineers', 'FTE',
      lambda cl, i: f'=ROUND({RFY}!{cl}41*{LV("svc_attach")}/{LV("visits_tech")},0)',
      annual='end',
      note='counted here but paid for in service COGS, so they are not charged twice')
-line(PE, 23, 'Total headcount', 'FTE', lambda cl, i: f'={cl}21+{cl}22', NUM1,
+line(PE, 22, 'Total headcount', 'FTE', lambda cl, i: f'={cl}20+{cl}21', NUM1,
      grand=True, annual='end')
 
 bar(PE, 25, 'COST BY DEPARTMENT')
@@ -763,11 +759,11 @@ line(PE, 27, 'Sales and marketing', 'EUR/mo',
                     f'+({cl}8+{cl}9+{cl}10)*{LV("c_comm")})*{SI(cl)}'), EUR)
 line(PE, 28, 'General and administrative', 'EUR/mo',
      lambda cl, i: (f'=(({cl}12+{cl}13)*{LV("c_ops")}+({cl}14+{cl}15)*{LV("c_sup")}'
-                    f'+({cl}16+{cl}18+{cl}19)*{LV("c_ga")})*{SI(cl)}'), EUR)
+                    f'+({cl}16+{cl}18)*{LV("c_ga")})*{SI(cl)}'), EUR)
 line(PE, 29, 'Total people cost', 'EUR/mo', lambda cl, i: f'=SUM({cl}26:{cl}28)',
      EUR, total=True)
 line(PE, 31, 'Average cost per person', 'EUR/mo',
-     lambda cl, i: f'=IFERROR({cl}29/{cl}21,0)', EUR, 'ratio', annual='avg')
+     lambda cl, i: f'=IFERROR({cl}29/{cl}20,0)', EUR, 'ratio', annual='avg')
 print('cogs and personnel written')
 
 # ===========================================================================
@@ -828,12 +824,12 @@ line(OP, 19, 'Total', 'EUR',
 
 bar(OP, 21, 'GENERAL AND ADMINISTRATIVE, EVERYTHING ELSE')
 line(OP, 22, 'Offices, IT and travel', 'EUR',
-     lambda cl, i: (f'=Personnel!{cl}21*({LV("fac_fte")}+{LV("it_fte")}'
+     lambda cl, i: (f'=Personnel!{cl}20*({LV("fac_fte")}+{LV("it_fte")}'
                     f'+{LV("trav_fte")})'), EUR,
      note='scales with the number of people on the payroll')
 line(OP, 23, 'Recruitment', 'EUR',
      lambda cl, i: ('=0' if i == 0 else
-                    f'=MAX(0,Personnel!{cl}21-Personnel!{pv(i)}21)*{LV("recruit")}'), EUR)
+                    f'=MAX(0,Personnel!{cl}20-Personnel!{pv(i)}20)*{LV("recruit")}'), EUR)
 line(OP, 24, 'Production line facility and maintenance', 'EUR',
      lambda cl, i: f'={RFY}!{cl}29*{LV("line_run")}', EUR,
      note='only once a line is actually producing')
@@ -1018,9 +1014,9 @@ d_line(19, 'EBITDA margin', lambda y: yc('Financial Statements', 17, y), PCT1, '
 d_line(20, 'Net income', lambda y: yc('Financial Statements', 23, y), EUR)
 
 d_bar(22, 'PEOPLE')
-d_line(23, 'On payroll at year end', lambda y: yc('Personnel', 21, y), NUM1)
-d_line(24, 'Field service engineers', lambda y: yc('Personnel', 22, y))
-d_line(25, 'Total headcount', lambda y: yc('Personnel', 23, y), NUM1, total=True)
+d_line(23, 'On payroll at year end', lambda y: yc('Personnel', 20, y), NUM1)
+d_line(24, 'Field service engineers', lambda y: yc('Personnel', 21, y))
+d_line(25, 'Total headcount', lambda y: yc('Personnel', 22, y), NUM1, total=True)
 d_line(26, 'Revenue per person',
        lambda y: f"=IFERROR({DCOL[y]}14/{DCOL[y]}25,0)", EUR,
        note='Viessmann runs at about EUR276k and Vaillant about EUR200k')
