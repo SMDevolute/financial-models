@@ -16,7 +16,6 @@ Structural differences from the current workbook, all deliberate:
     build capacity cap it, and the model says which one bit
   * no market-size or share logic anywhere
   * capacity and capex follow the assembly-partner to in-house handover
-  * warranty reserve sits in COGS, where it belongs
   * headcount is driven by the drivers that create the work, inside Personnel
 
 Output: models/Tarnoc_v2_2026-09-01.xlsx
@@ -473,9 +472,6 @@ t3 = a_row3('bom_t3', 'Tier 3', 10000, 4998, 1136.10, (NUM, EUR, EUR))
 BOM_T1, BOM_T3 = t1, t3
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
 a_single('ship_combi', 'Inbound shipping, Combi+ outdoor unit', 'EUR/unit', 100, 100, EUR)
-a_single('warranty', 'Warranty reserve per unit, on top of the BOM provision',
-         'EUR/unit', 200, 200, EUR,
-         'the BOM already carries a 3% yield and warranty allowance; this is the reserve above it')
 
 # ---- organisation ---------------------------------------------------------
 a_bar('ORGANISATION  (headcount follows whatever creates the work)')
@@ -500,7 +496,8 @@ a_yeartable('core_ga', 'Leadership, finance, HR, IT and legal', 'FTE',
             [3, 4, 5, 6, 8], [3, 5, 10, 14, 18], NUM,
             'the whole back office, typed per year: leadership in post by end 2026, then finance, HR, IT and legal as the company grows')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
-a_single('visits_tech', 'Service visits per engineer per year', 'visits', 750, 750)
+a_single('visits_tech', 'Units on a service contract per field engineer', 'units', 750, 750,
+         note='one visit per contract per year, so about three and a half visits per engineer per working day')
 
 a_bar('LOADED COST PER PERSON  (employer cost, including taxes)')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
@@ -512,8 +509,7 @@ a_single('c_sup', 'Support and escalation', 'EUR/month', 4800, 4800, EUR)
 a_single('c_ga', 'Quality, certification and G&A', 'EUR/month', 7000, 7000, EUR)
 a_single('c_rnd', 'R&D engineer', 'EUR/month', 5700, 5700, EUR,
          note='the blended cost of the seven engineers already in post')
-a_single('c_tech', 'Field service engineer', 'EUR/month', 6500, 6500, EUR,
-         note='shown for reference: their cost sits in service COGS, not in OPEX')
+a_single('c_tech', 'Field service engineer', 'EUR/month', 6500, 6500, EUR)
 
 a_bar('OVERHEADS AND OTHER OPERATING COSTS')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
@@ -688,13 +684,11 @@ line(CG, 16, 'Installation (pass-through)', 'EUR', lambda cl, i: f'={RFY}!{cl}47
      note='identical to the installation revenue, so it nets to nil')
 line(CG, 17, 'Service delivery', 'EUR',
      lambda cl, i: f'={RFY}!{cl}7*{LV("svc_cost")}/12', EUR,
-     note='the field engineers who service the installed base')
-line(CG, 18, 'Warranty reserve', 'EUR', lambda cl, i: f'={RFY}!{cl}34*{LV("warranty")}', EUR,
-     note='on top of the yield allowance already inside the BOM')
-line(CG, 19, 'Total cost of goods sold', 'EUR',
-     lambda cl, i: f'=SUM({cl}13:{cl}18)', EUR, grand=True)
-line(CG, 21, 'Gross profit per unit', 'EUR/unit',
-     lambda cl, i: f'=IFERROR(({RFY}!{cl}50-{cl}19)/{RFY}!{cl}34,0)', EUR, 'ratio',
+     note='parts, consumables and travel per contract, from the service table; the engineers are on Personnel')
+line(CG, 18, 'Total cost of goods sold', 'EUR',
+     lambda cl, i: f'=SUM({cl}13:{cl}17)', EUR, grand=True)
+line(CG, 20, 'Gross profit per unit', 'EUR/unit',
+     lambda cl, i: f'=IFERROR(({RFY}!{cl}50-{cl}18)/{RFY}!{cl}34,0)', EUR, 'ratio',
      annual='avg')
 
 # ===========================================================================
@@ -739,15 +733,13 @@ line(PE, 17, 'R&D engineers', 'FTE',
 line(PE, 18, 'Leadership, finance, HR, IT and legal', 'FTE',
      lambda cl, i: '=' + YL('core_ga', cl), kind='link', annual='end',
      note='the whole back office, typed per year on Assumptions')
-line(PE, 19, 'Operations, support and administration', 'FTE',
-     lambda cl, i: f'=SUM({cl}12:{cl}18)', NUM1, total=True, annual='end')
-line(PE, 20, 'Total on payroll', 'FTE', lambda cl, i: f'={cl}11+{cl}19', NUM1,
-     total=True, annual='end')
-line(PE, 21, 'Field service engineers', 'FTE',
+line(PE, 19, 'Field service engineers', 'FTE',
      lambda cl, i: f'=ROUND({RFY}!{cl}41*{LV("svc_attach")}/{LV("visits_tech")},0)',
      annual='end',
-     note='counted here but paid for in service COGS, so they are not charged twice')
-line(PE, 22, 'Total headcount', 'FTE', lambda cl, i: f'={cl}20+{cl}21', NUM1,
+     note='salaried staff: one engineer per 750 units on a service contract')
+line(PE, 20, 'Operations, support and administration', 'FTE',
+     lambda cl, i: f'=SUM({cl}12:{cl}19)', NUM1, total=True, annual='end')
+line(PE, 21, 'Total headcount', 'FTE', lambda cl, i: f'={cl}11+{cl}20', NUM1,
      grand=True, annual='end')
 
 bar(PE, 25, 'COST BY DEPARTMENT')
@@ -759,11 +751,11 @@ line(PE, 27, 'Sales and marketing', 'EUR/mo',
                     f'+({cl}8+{cl}9+{cl}10)*{LV("c_comm")})*{SI(cl)}'), EUR)
 line(PE, 28, 'General and administrative', 'EUR/mo',
      lambda cl, i: (f'=(({cl}12+{cl}13)*{LV("c_ops")}+({cl}14+{cl}15)*{LV("c_sup")}'
-                    f'+({cl}16+{cl}18)*{LV("c_ga")})*{SI(cl)}'), EUR)
+                    f'+({cl}16+{cl}18)*{LV("c_ga")}+{cl}19*{LV("c_tech")})*{SI(cl)}'), EUR)
 line(PE, 29, 'Total people cost', 'EUR/mo', lambda cl, i: f'=SUM({cl}26:{cl}28)',
      EUR, total=True)
 line(PE, 31, 'Average cost per person', 'EUR/mo',
-     lambda cl, i: f'=IFERROR({cl}29/{cl}20,0)', EUR, 'ratio', annual='avg')
+     lambda cl, i: f'=IFERROR({cl}29/{cl}21,0)', EUR, 'ratio', annual='avg')
 print('cogs and personnel written')
 
 # ===========================================================================
@@ -824,12 +816,12 @@ line(OP, 19, 'Total', 'EUR',
 
 bar(OP, 21, 'GENERAL AND ADMINISTRATIVE, EVERYTHING ELSE')
 line(OP, 22, 'Offices, IT and travel', 'EUR',
-     lambda cl, i: (f'=Personnel!{cl}20*({LV("fac_fte")}+{LV("it_fte")}'
+     lambda cl, i: (f'=Personnel!{cl}21*({LV("fac_fte")}+{LV("it_fte")}'
                     f'+{LV("trav_fte")})'), EUR,
      note='scales with the number of people on the payroll')
 line(OP, 23, 'Recruitment', 'EUR',
      lambda cl, i: ('=0' if i == 0 else
-                    f'=MAX(0,Personnel!{cl}20-Personnel!{pv(i)}20)*{LV("recruit")}'), EUR)
+                    f'=MAX(0,Personnel!{cl}21-Personnel!{pv(i)}21)*{LV("recruit")}'), EUR)
 line(OP, 24, 'Production line facility and maintenance', 'EUR',
      lambda cl, i: f'={RFY}!{cl}29*{LV("line_run")}', EUR,
      note='only once a line is actually producing')
@@ -857,7 +849,7 @@ datebar(FS)
 
 bar(FS, 5, 'PROFIT AND LOSS')
 line(FS, 6, 'Revenue', 'EUR', lambda cl, i: f'={RFY}!{cl}50', EUR, 'link')
-line(FS, 7, 'Cost of goods sold', 'EUR', lambda cl, i: f'=-COGS!{cl}19', EUR, 'link')
+line(FS, 7, 'Cost of goods sold', 'EUR', lambda cl, i: f'=-COGS!{cl}18', EUR, 'link')
 line(FS, 8, 'Gross profit', 'EUR', lambda cl, i: f'={cl}6+{cl}7', EUR, grand=True)
 line(FS, 9, 'Gross margin', '%', lambda cl, i: f'=IFERROR({cl}8/{cl}6,0)', PCT1,
      'ratio', annual='avg')
@@ -1014,9 +1006,8 @@ d_line(19, 'EBITDA margin', lambda y: yc('Financial Statements', 17, y), PCT1, '
 d_line(20, 'Net income', lambda y: yc('Financial Statements', 23, y), EUR)
 
 d_bar(22, 'PEOPLE')
-d_line(23, 'On payroll at year end', lambda y: yc('Personnel', 20, y), NUM1)
-d_line(24, 'Field service engineers', lambda y: yc('Personnel', 21, y))
-d_line(25, 'Total headcount', lambda y: yc('Personnel', 22, y), NUM1, total=True)
+d_line(23, 'Field service engineers', lambda y: yc('Personnel', 19, y))
+d_line(24, 'Total headcount', lambda y: yc('Personnel', 21, y), NUM1, total=True)
 d_line(26, 'Revenue per person',
        lambda y: f"=IFERROR({DCOL[y]}14/{DCOL[y]}25,0)", EUR,
        note='Viessmann runs at about EUR276k and Vaillant about EUR200k')
@@ -1148,8 +1139,8 @@ h_bar(30, 'THINGS WORTH KNOWING')
 for r, txt in enumerate([
     'Installation is a pass-through. It is charged to the customer at exactly what the installation partner is paid, '
     'so it adds revenue and an identical cost and no margin.',
-    'Field service engineers are counted on the Personnel tab but their cost sits in service COGS, because the service '
-    'contract cost per unit already covers the field labour. They are not charged twice.',
+    'Field service engineers are salaried staff on the Personnel tab. The service contract cost per unit in COGS '
+    'covers parts, consumables and travel, not their salaries.',
     'Unit cost falls in steps, not smoothly. The turbineketel bill of materials is EUR9,984 below 5,000 units a year, '
     'EUR7,069 from 5,000 and EUR4,998 from 10,000. Almost all of the profit in the later years comes from crossing '
     'the second step, so that assumption carries more weight than any other in the model.',
