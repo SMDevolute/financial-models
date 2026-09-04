@@ -79,7 +79,7 @@ chk('tax losses carried forward never negative',lambda i:(F64[i]>=-T,''))
 chk('equity raised never negative',lambda i:(F35[i]>=-T,''))
 
 print('\n=== OPERATING LOGIC ===')
-R11,R24,R31,R34,R16,R20,R47,R41=[row(RF,x) for x in (11,24,31,34,16,20,47,41)]
+R11,R24,R31,R34,R16,R20,R47,R41=[row(RF,x) for x in (11,22,31,34,16,19,47,41)]
 C16=row(CG,16)
 AS_lbl={}
 for rr in range(1,200):
@@ -93,10 +93,10 @@ chk('units never exceed selling capacity',lambda i:(R34[i]<=R24[i]+0.5,f'{R34[i]
 chk('units never exceed build capacity',lambda i:(R34[i]<=R31[i]+0.5,f'{R34[i]} vs {R31[i]:.1f}'))
 chk('no units before the first sellable month',
     lambda i:(True,'') if md(i)>=sell_from else (abs(R34[i])<T,f'{R34[i]}'))
-chk('no reps hired before the hiring date',
-    lambda i:(True,'') if md(i)>=hire_from else (abs(R16[i])<T,f'{R16[i]}'))
-chk('no partners signed before the hiring date',
-    lambda i:(True,'') if md(i)>=hire_from else (abs(R20[i])<T,f'{R20[i]}'))
+chk('no reps hired before the first sellable month',
+    lambda i:(True,'') if md(i)>=sell_from else (abs(R16[i])<T,f'{R16[i]}'))
+chk('no partners signed before the first sellable month',
+    lambda i:(True,'') if md(i)>=sell_from else (abs(R20[i])<T,f'{R20[i]}'))
 chk('installation is a true pass-through, revenue equals cost',
     lambda i:(abs(R47[i]-C16[i])<T,f'{R47[i]:.2f} vs {C16[i]:.2f}'))
 chk('installed base never falls',lambda i:(True,'') if i==0 else (R41[i]>=R41[i-1]-T,''))

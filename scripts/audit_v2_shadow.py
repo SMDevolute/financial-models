@@ -65,12 +65,9 @@ l2q   = n(live('Lead to qualified')); q2w = n(live('Qualified to won'))
 direct = yearvals('Share of units sold direct')
 repadd = yearvals('Reps hired per month')
 ptradd = yearvals('Installer partners signed per month')
-rep_s = n(live('Reps in post at Jan-2026')); quota = n(live('Quota per fully productive rep'))
-rep_ramp = int(n(live('Months for a rep to reach full productivity')))
-attain = n(live('Quota attainment'))
+rep_s = n(live('Reps in post at Jan-2026')); quota = n(live('Quota per rep'))
 ptr_s = n(live('Installer partners at Jan-2026'))
-ptr_ramp = int(n(live('Months for a partner to reach full productivity')))
-per_ptr = n(live('Units per productive partner per month'))
+per_ptr = n(live('Units per partner per month'))
 ptr_pm  = n(live('Partners per partner manager'))
 pcap = n(live('Assembly partner capacity'))
 line1 = dat('In-house line 1 producing from'); line2 = dat('In-house line 2 producing from')
@@ -136,8 +133,8 @@ def vlook(key, col):
 
 # ---- the shadow model -----------------------------------------------------
 S = {k: [0.0] * NM for k in (
-    'spend','ib_open','cpl_eff','leads','sql','demand','direct','rep_h','rep_hc','rep_p',
-    'dcap','ptr_h','ptr_hc','ptr_p','ccap','scap','pm','pcap','lines','icap','bcap',
+    'spend','ib_open','cpl_eff','leads','sql','demand','direct','rep_h','rep_hc',
+    'dcap','ptr_h','ptr_hc','ccap','scap','pm','pcap','lines','icap','bcap',
     'units','ttk_u','cmb_u','ib_close','r_ttk','r_cmb','r_ups','r_ins','r_svc','r_grant',
     'r_tot','uy','uny','tkey','c_ttk_u','c_odu_u','c_ttk','c_cmb','c_ups','c_ins','c_svc',
     'c_warr','c_tot','hc_rep','hc_pm','hc_tr','hc_desk','hc_mkt','hc_sm','hc_sc','hc_op',
@@ -160,14 +157,12 @@ for _pass in range(3):
         S['sql'][i] = S['leads'][i]*l2q
         S['demand'][i] = S['sql'][i]*q2w
         S['direct'][i] = direct[y]
-        S['rep_h'][i] = 0.0 if d < hire_from else repadd[y]
+        S['rep_h'][i] = 0.0 if d < sell_from else repadd[y]
         S['rep_hc'][i] = (rep_s + S['rep_h'][i]) if i == 0 else S['rep_hc'][i-1] + S['rep_h'][i]
-        S['rep_p'][i] = rep_s if i < rep_ramp else S['rep_hc'][i-rep_ramp]
-        S['dcap'][i] = S['rep_p'][i]*quota*attain
-        S['ptr_h'][i] = 0.0 if d < hire_from else ptradd[y]
+        S['dcap'][i] = S['rep_hc'][i]*quota
+        S['ptr_h'][i] = 0.0 if d < sell_from else ptradd[y]
         S['ptr_hc'][i] = (ptr_s + S['ptr_h'][i]) if i == 0 else S['ptr_hc'][i-1] + S['ptr_h'][i]
-        S['ptr_p'][i] = ptr_s if i < ptr_ramp else S['ptr_hc'][i-ptr_ramp]
-        S['ccap'][i] = S['ptr_p'][i]*per_ptr
+        S['ccap'][i] = S['ptr_hc'][i]*per_ptr
         ds = S['direct'][i]
         a = S['dcap'][i]/ds if ds else 1_000_000
         b = S['ccap'][i]/(1-ds) if (1-ds) else 1_000_000
@@ -294,11 +289,10 @@ CHECKS = [
  ('RF spend',RF,6,'spend'),('RF ib open',RF,7,'ib_open'),('RF cpl',RF,8,'cpl_eff'),
  ('RF leads',RF,9,'leads'),('RF qualified',RF,10,'sql'),('RF demand',RF,11,'demand'),
  ('RF direct share',RF,15,'direct'),('RF reps hired',RF,16,'rep_h'),
- ('RF reps in post',RF,17,'rep_hc'),('RF reps productive',RF,18,'rep_p'),
- ('RF direct cap',RF,19,'dcap'),('RF ptr signed',RF,20,'ptr_h'),
- ('RF ptr on books',RF,21,'ptr_hc'),('RF ptr productive',RF,22,'ptr_p'),
- ('RF channel cap',RF,23,'ccap'),('RF selling cap',RF,24,'scap'),
- ('RF partner mgrs',RF,25,'pm'),('RF lines',RF,29,'lines'),('RF build cap',RF,31,'bcap'),
+ ('RF reps in post',RF,17,'rep_hc'),('RF direct cap',RF,18,'dcap'),
+ ('RF ptr signed',RF,19,'ptr_h'),('RF ptr on books',RF,20,'ptr_hc'),
+ ('RF channel cap',RF,21,'ccap'),('RF selling cap',RF,22,'scap'),
+ ('RF partner mgrs',RF,23,'pm'),('RF lines',RF,29,'lines'),('RF build cap',RF,31,'bcap'),
  ('RF units',RF,34,'units'),('RF ttk units',RF,39,'ttk_u'),('RF cmb units',RF,40,'cmb_u'),
  ('RF ib close',RF,41,'ib_close'),('RF rev ttk',RF,44,'r_ttk'),('RF rev cmb',RF,45,'r_cmb'),
  ('RF rev upsell',RF,46,'r_ups'),('RF rev install',RF,47,'r_ins'),

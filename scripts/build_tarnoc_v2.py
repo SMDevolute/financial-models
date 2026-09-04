@@ -425,22 +425,20 @@ a_yeartable('direct', 'Share of units sold direct', '%',
             [1.00, 0.70, 0.40, 0.22, 0.15], PCT,
             'the business change: selling shifts from our own reps to trained installers')
 a_yeartable('rep_add', 'Reps hired per month', 'FTE/month',
-            [1.5, 0.25, 0.25, 0.25, 0.25],
-            [2.0, 1.25, 1.00, 0.60, 0.60], NUM2,
-            'the 2026 rate only applies from the hiring date, so it covers November and December')
+            [0.0, 0.25, 0.25, 0.25, 0.25],
+            [0.0, 1.25, 1.00, 0.60, 0.60], NUM2,
+            'sales hiring starts in the first month we can sell, so 2026 is nil')
 a_yeartable('ptr_add', 'Installer partners signed per month', 'partners/month',
-            [1.0, 1.0, 2.0, 3.0, 3.8],
-            [2.0, 3.5, 6.0, 9.0, 11.0], NUM1,
-            'same gate: no partner is signed before the raise')
+            [0.0, 1.0, 2.0, 3.0, 3.8],
+            [0.0, 3.5, 6.0, 9.0, 11.0], NUM1,
+            'same gate: no partner intros before the first month we can sell')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
 a_single('rep_start', 'Reps in post at Jan-2026', 'FTE', 1, 1, NUM1)
-a_single('quota', 'Quota per fully productive rep', 'units/month', 20, 20)
-a_single('rep_ramp', 'Months for a rep to reach full productivity', 'months', 6, 6,
-         note='a rep carries no quota until fully ramped, which is deliberately conservative')
-a_single('attain', 'Quota attainment', '%', 0.85, 0.85, PCT)
+a_single('quota', 'Quota per rep', 'units/month', 20, 20,
+         note='a rep sells full quota from the month they are hired, no ramp and no attainment haircut')
 a_single('ptr_start', 'Installer partners at Jan-2026', 'partners', 1, 1, NUM1)
-a_single('ptr_ramp', 'Months for a partner to reach full productivity', 'months', 4, 4)
-a_single('per_ptr', 'Units per productive partner per month', 'units/month', 8, 8)
+a_single('per_ptr', 'Units per partner per month', 'units/month', 8, 8,
+         note='a partner sells full volume from the month they are signed')
 a_single('ptr_per_pm', 'Partners per partner manager', 'partners', 18, 18)
 print(f'assumptions: upsell through selling, rows 4..{_ar-1}')
 
@@ -580,37 +578,31 @@ line(RF, 15, 'Share sold direct', '%', lambda cl, i: '=' + YL('direct', cl),
      PCT, 'link', annual='avg',
      note='the rest is sold by trained installer partners')
 line(RF, 16, 'Reps hired', 'FTE',
-     lambda cl, i: f'=IF({cl}$3<{LV("hire_from")},0,' + YL('rep_add', cl) + ')',
-     NUM2, 'link', note='nobody is hired before the raise lands')
+     lambda cl, i: f'=IF({cl}$3<{LV("sell_from")},0,' + YL('rep_add', cl) + ')',
+     NUM2, 'link', note='no sales reps before the first month we can sell')
 line(RF, 17, 'Reps in post', 'FTE',
      lambda cl, i: (f'={LV("rep_start")}+{cl}16' if i == 0 else f'={MC[i-1]}17+{cl}16'),
      NUM1, annual='end')
-line(RF, 18, 'Reps fully productive', 'FTE',
-     lambda cl, i: (f'={LV("rep_start")}' if i == 0 else
-                    f'=IF({i}<{LV("rep_ramp")},{LV("rep_start")},'
-                    f'INDEX($E$17:${LM}$17,{i}+1-{LV("rep_ramp")}))'),
-     NUM1, annual='end', note='no quota until fully ramped, which is deliberately conservative')
-line(RF, 19, 'Capacity from our own reps', 'units/mo',
-     lambda cl, i: f'={cl}18*{LV("quota")}*{LV("attain")}')
-line(RF, 20, 'Installer partners signed', 'partners',
-     lambda cl, i: f'=IF({cl}$3<{LV("hire_from")},0,' + YL('ptr_add', cl) + ')',
-     NUM1, 'link')
-line(RF, 21, 'Installer partners on the books', 'partners',
-     lambda cl, i: (f'={LV("ptr_start")}+{cl}20' if i == 0 else f'={MC[i-1]}21+{cl}20'),
+line(RF, 18, 'Capacity from our own reps', 'units/mo',
+     lambda cl, i: f'={cl}17*{LV("quota")}',
+     note='every rep in post carries full quota from the month they are hired')
+line(RF, 19, 'Installer partners signed', 'partners',
+     lambda cl, i: f'=IF({cl}$3<{LV("sell_from")},0,' + YL('ptr_add', cl) + ')',
+     NUM1, 'link', note='no partner intros before the first month we can sell')
+line(RF, 20, 'Installer partners on the books', 'partners',
+     lambda cl, i: (f'={LV("ptr_start")}+{cl}19' if i == 0 else f'={MC[i-1]}20+{cl}19'),
      NUM1, annual='end')
-line(RF, 22, 'Installer partners productive', 'partners',
-     lambda cl, i: (f'={LV("ptr_start")}' if i == 0 else
-                    f'=IF({i}<{LV("ptr_ramp")},{LV("ptr_start")},'
-                    f'INDEX($E$21:${LM}$21,{i}+1-{LV("ptr_ramp")}))'),
-     NUM1, annual='end')
-line(RF, 23, 'Capacity from the installer channel', 'units/mo',
-     lambda cl, i: f'={cl}22*{LV("per_ptr")}')
-line(RF, 24, 'Selling capacity', 'units/mo',
-     lambda cl, i: (f'=MIN(IFERROR({cl}19/{cl}15,1000000),'
-                    f'IFERROR({cl}23/(1-{cl}15),1000000))'), total=True,
+line(RF, 21, 'Capacity from the installer channel', 'units/mo',
+     lambda cl, i: f'={cl}20*{LV("per_ptr")}',
+     note='every partner on the books sells full volume from the month they are signed')
+line(RF, 22, 'Selling capacity', 'units/mo',
+     lambda cl, i: (f'=MIN(IFERROR({cl}18/{cl}15,1000000),'
+                    f'IFERROR({cl}21/(1-{cl}15),1000000))'), total=True,
      note='our reps must cover the direct share and the partners the rest, so the mix caps it')
-line(RF, 25, 'Partner managers needed', 'FTE',
-     lambda cl, i: f'=ROUND({cl}21/{LV("ptr_per_pm")},0)', annual='end')
+line(RF, 23, 'Partner managers needed', 'FTE',
+     lambda cl, i: f'=ROUND({cl}20/{LV("ptr_per_pm")},0)', annual='end')
+line(RF, 24, 'Selling capacity used', '%',
+     lambda cl, i: f'=IFERROR({cl}34/{cl}22,0)', PCT, 'ratio', annual='avg')
 
 bar(RF, 27, 'BUILD CAPACITY')
 line(RF, 28, 'Assembly partner', 'units/mo', lambda cl, i: f'={LV("partner_cap")}',
@@ -624,11 +616,11 @@ line(RF, 31, 'Build capacity', 'units/mo', lambda cl, i: f'={cl}28+{cl}30', tota
 bar(RF, 33, 'UNITS SOLD')
 line(RF, 34, 'Units sold', 'units',
      lambda cl, i: (f'=IF({cl}$3<{LV("sell_from")},0,'
-                    f'ROUND(MIN({cl}11,{cl}24,{cl}31),0))'), grand=True,
+                    f'ROUND(MIN({cl}11,{cl}22,{cl}31),0))'), grand=True,
      note='nil until the first month we can sell, then the smallest of demand, selling and build capacity')
 line(RF, 35, 'Why we did not sell more', '',
      lambda cl, i: (f'=IF({cl}34>={cl}31-0.5,"Build capacity",'
-                    f'IF({cl}34>={cl}24-0.5,"Selling capacity","Demand"))'),
+                    f'IF({cl}34>={cl}22-0.5,"Selling capacity","Demand"))'),
      TEXT, annual='end')
 line(RF, 36, 'Build capacity used', '%',
      lambda cl, i: f'=IFERROR({cl}34/{cl}31,0)', PCT, 'ratio', annual='avg')
@@ -723,9 +715,9 @@ yr_rnd, lv_rnd = AY['rnd_add']
 
 bar(PE, 5, 'HEADCOUNT')
 line(PE, 6, 'Sales reps', 'FTE', lambda cl, i: f'={RFY}!{cl}17', NUM1, 'link', annual='end')
-line(PE, 7, 'Partner managers', 'FTE', lambda cl, i: f'={RFY}!{cl}25', 'link', annual='end')
+line(PE, 7, 'Partner managers', 'FTE', lambda cl, i: f'={RFY}!{cl}23', 'link', annual='end')
 line(PE, 8, 'Installer trainers', 'FTE',
-     lambda cl, i: f'=ROUND({RFY}!{cl}20*12/{LV("ptr_per_tr")},0)', annual='end',
+     lambda cl, i: f'=ROUND({RFY}!{cl}19*12/{LV("ptr_per_tr")},0)', annual='end',
      note='every partner has to be trained and certified before selling anything')
 line(PE, 9, 'Order desk', 'FTE',
      lambda cl, i: f'=ROUND({RFY}!{cl}34*12/{LV("u_per_desk")},0)', annual='end')
@@ -827,7 +819,7 @@ bar(OP, 11, 'SALES AND MARKETING, EVERYTHING ELSE')
 line(OP, 12, 'Performance marketing', 'EUR', lambda cl, i: f'={RFY}!{cl}6', EUR, 'link',
      note='the same spend that drives the funnel, so it can never be double counted')
 line(OP, 13, 'Installer training and demo units', 'EUR',
-     lambda cl, i: f'={RFY}!{cl}20*{LV("enable")}', EUR)
+     lambda cl, i: f'={RFY}!{cl}19*{LV("enable")}', EUR)
 line(OP, 14, 'Total', 'EUR',
      lambda cl, i: f'=IF({cl}$3<={LV("freeze_to")},{cl}42,SUM({cl}12:{cl}13))', EUR, total=True)
 
@@ -1020,7 +1012,7 @@ d_line(8, 'Why we did not sell more, December',
        lambda y: f"='Revenue Forecast'!{YMONTHS[y][-1]}35", TEXT,
        note='the reason the plan could not sell more in the last month of the year')
 d_line(9, 'Build capacity used', lambda y: yc('Revenue Forecast', 36, y), PCT1, 'ratio')
-d_line(10, 'Installer partners at year end', lambda y: yc('Revenue Forecast', 21, y), NUM1)
+d_line(10, 'Installer partners at year end', lambda y: yc('Revenue Forecast', 20, y), NUM1)
 d_line(11, 'Marketing cost per unit sold', lambda y: yc('Revenue Forecast', 12, y), EUR)
 
 d_bar(13, 'PROFIT AND LOSS')
@@ -1157,7 +1149,7 @@ h_bar(22, 'HOW UNITS SOLD IS DECIDED')
 for r, txt in enumerate([
     'Units sold is not typed in. Three numbers are worked out for every month and the smallest one wins:',
     '    1.  Orders the funnel generates.  Marketing spend divided by cost per lead, then through the two conversion rates.',
-    '    2.  What we can sell.  Our own reps times quota, plus productive installer partners times units each, capped by the direct and channel mix.',
+    '    2.  What we can sell.  Our own reps times quota, plus installer partners times units each, capped by the direct and channel mix. No ramp-up: reps and partners sell at full rate from the month they join.',
     '    3.  What we can build.  The assembly partner, plus any in-house line that is producing.',
     'Revenue Forecast row 35 names which of the three stopped us in each month, and the Dashboard shows it by year.',
     'There is no market size or market share anywhere in the model.',
