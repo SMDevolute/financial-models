@@ -421,11 +421,11 @@ a_yeartable('direct', 'Share of units sold direct', '%',
             [1.00, 0.80, 0.50, 0.35, 0.30], PCT,
             'direct to consumer first, installers brought in from 2027, half the volume by 2028 and installer-led from 2029')
 a_yeartable('rep_add', 'Reps hired per month', 'FTE/month',
-            [0.0, 0.25, 0.25, 0.25, 0.25],
+            [0.0, 0.50, 0.25, 0.25, 0.25],
             [0.0, 2.00, 1.00, 0.50, 0.25], NUM2,
             'sales hiring starts in the first month we can sell, so 2026 is nil')
 a_yeartable('ptr_add', 'Installer partners signed per month', 'partners/month',
-            [0.0, 0.5, 1.5, 3.0, 3.8],
+            [0.0, 1.0, 1.5, 3.0, 3.8],
             [0.0, 3.0, 5.0, 7.0, 8.0], NUM1,
             'same gate: no partner intros before the first month we can sell; the network takes time to build')
 a_yeartable('ptr_orders', 'Orders an installer partner brings in per month', 'units/month',
@@ -482,7 +482,7 @@ a_single('ship_combi', 'Inbound shipping, Combi+ outdoor unit', 'EUR/unit', 100,
 # ---- organisation ---------------------------------------------------------
 a_bar('ORGANISATION  (headcount follows whatever creates the work)')
 a_yeartable('rnd_add', 'R&D engineers hired in the year', 'FTE',
-            [0, 2, 2, 3, 4], [0, 10, 16, 16, 16], NUM,
+            [0, 4, 3, 3, 4], [0, 10, 16, 16, 16], NUM,
             'a novel turbine machine plus the Twincycle needs engineers, not a fixed team')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
 a_single('rnd_start', 'R&D engineers in post at Jan-2026', 'FTE', 10, 10,
@@ -497,8 +497,8 @@ a_single('ptr_per_tr', 'New partners per year per installer trainer', 'partners'
 a_single('u_per_desk', 'Units per order desk FTE', 'units/yr', 3000, 3000)
 a_single('mkt_per_fte', 'Marketing spend per marketer', 'EUR/yr', 3000000, 3000000, EUR)
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
-a_single('visits_tech', 'Installed units one field engineer can look after', 'units', 750, 750,
-         note='sizes the field service team: units on a service contract divided by this number = engineers to hire. Each unit gets one visit a year, an engineer does three to four a day')
+a_single('visits_tech', 'Installed units one field engineer can look after', 'units', 600, 600,
+         note='sizes the field service team: units on a service contract divided by this number = engineers to hire. Each unit gets one visit a year plus breakdown cover; market range 600 to 900')
 
 a_bar('LOADED COST PER PERSON  (employer cost, including taxes)')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
