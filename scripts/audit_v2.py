@@ -3,7 +3,7 @@ audit_v2.py -- full correctness audit of the Tarnoc v2 model.
 
     python3 scripts/audit_v2.py models/Tarnoc_v2_2026-09-07.xlsx
 
-Four phases, run against a real LibreOffice recalculation, not against openpyxl's
+Five phases, run against a real LibreOffice recalculation, not against openpyxl's
 view of the formulas:
 
   1. Recalculate both cases and look for formula
@@ -14,6 +14,11 @@ view of the formulas:
      cannot catch, because a shadow can share the same wrong intent.
   4. Check the structure: no stray hardcodes, every cross-sheet reference lands
      on the row it claims, the live column reads its own row, no orphans.
+  5. Sweep the inputs across plausible ranges and check the model still behaves
+     at points other than the base case. Phases 1 to 4 all test one point in
+     input space; a model can be right there and wrong elsewhere.
+     SWEEP_DRAWS sets the number of draws (default 300; use 2000+ before a
+     release).
 
 Exits non-zero if anything fails.
 """
@@ -94,6 +99,12 @@ def main():
             ok &= run('audit_v2_identities.py', [recalced[case]])
         print('\nPHASE 4  structure')
         ok &= run('audit_v2_structure.py', [src])
+        draws = os.environ.get('SWEEP_DRAWS', '300')
+        if draws != '0':
+            print(f'\nPHASE 5  input sweep, {draws} draws')
+            ok &= run('audit_v2_sweep.py', [src, draws],
+                      keep=('baseline check', 'self test', 'model faults',
+                            'runs out of cash', 'SWEEP', 'FAIL'))
         print('\n' + ('AUDIT PASSED' if ok else 'AUDIT FAILED'))
         sys.exit(0 if ok else 1)
     finally:

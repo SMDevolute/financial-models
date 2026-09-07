@@ -182,13 +182,20 @@ sheet ties in all sixty months. Sources equal uses. Funding received equals the
 funding typed in. Every cross-tab link lands where it should.
 
 On top of that the audit now tests whether the answers are possible in the real
-world, not only whether the formulas agree with each other. It requires people,
+world, not only whether the formulas agree with each other, and it does so at
+4,000 different sets of inputs rather than only at the numbers as they stand
+today. It requires people,
 partners, production lines and units to be whole numbers, headcount never to go
 backwards, cash never to go below zero, revenue per unit to look like the
 product, tax never to exceed the statutory rate, and the installed base to equal
 everything sold. Two independent line-by-line reviews on 7 September found about
 twenty defects, and these reality checks then found two more. All were fixed and
 re-checked. The 2026 committed plan reconciles to your own model to the euro.
+
+What none of this settles is whether the assumptions are right. A 50% reduction
+in the bill of materials is either achievable or it is not, and only a supplier
+quote will tell us. The checks prove the model does what it says with the numbers
+it is given.
 
 The model has no formula errors and no hardcoded results. Change any assumption
 and every number downstream moves.

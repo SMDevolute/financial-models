@@ -85,3 +85,23 @@ It also found a second defect straight away that nobody had spotted: the TTK and
 Effect of that second fix, base: 2027 revenue EUR5,995,461 to EUR5,994,199, 2028 EUR22,813,647 to EUR22,812,385, 2030 EUR126.29m to EUR126.28m, 2028 EBITDA EUR858,070 to EUR857,334, cash low EUR599,214 to EUR598,473, cover 2.34 to 2.33 months. Aggressive: 2027 revenue EUR47,610,111 to EUR47,612,635, 2028 EBITDA EUR22,782,769 to EUR22,801,049, cash low unchanged at EUR994,454. Volumes unchanged in both.
 
 All three workbooks rebuilt and passed the full audit, now five phases of checks, 114 of 114 shadow rows agreeing.
+
+## Phase 5: the input sweep
+
+Every other phase tests one point in input space, the assumptions exactly as they are typed. A model can be correct there and wrong when the client triples the marketing budget. `scripts/audit_v2_sweep.py` samples 33 inputs across plausible ranges (marketing 0 to 5x, cost per lead 0.4 to 3x, close rates 5% to 95%, quota 0.25 to 2x, partner capacity, all prices, the service and upsell baskets, the staffing ratios, DSO 0 to 120 days, DPO 0 to 150, tax 0 to 40%, salary inflation 0 to 20%) and runs the model on every draw.
+
+It separates two things that are not the same:
+
+- **Model fault.** Something that cannot be true of any business: a fractional person, a count going backwards, an identity breaking, units above the constraint that set them, tax as a credit, a product split that does not add to units sold. This is a bug.
+- **Plan fails.** The arithmetic is right and the business runs out of money. Not a bug, reported separately so the two are never confused.
+
+Result: 2,000 draws on each of the base and aggressive workbooks, 4,000 in total, **zero model faults**. The plan runs out of cash in 73% of base draws and 75% of aggressive draws, which is what a EUR3m and a EUR10m raise should look like when the inputs are pushed that hard.
+
+Two guards were built in after the sweep's own first version reported a confident pass off a broken baseline:
+
+- **Baseline guard.** Seven assumption cells are themselves formulas (the Combi+ price, the product split, the upsell and service baskets). Read off a workbook that openpyxl built, they come back empty and every number after them is wrong. The sweep now recalculates in LibreOffice first and refuses to run unless the unperturbed draw matches the workbook's closing cash in all 60 months. It matches to 0.0000.
+- **Self test.** A checker that never fires cannot be told apart from one that works. Before sweeping, the script takes the good run, breaks one number at a time in twelve different ways, and requires all twelve to be caught and the good model to raise nothing. All twelve are caught.
+
+The sweep is now phase 5 of `scripts/audit_v2.py`, 300 draws by default, about 15 seconds on top of the rest. `SWEEP_DRAWS=2000` before anything goes to the client, `SWEEP_DRAWS=0` to skip.
+
+What this does not cover, and should be said plainly: the sweep tests the logic, not the assumptions. A 50% BOM cost-down is either achievable or it is not, and no audit will ever settle that. Only a supplier quote will.

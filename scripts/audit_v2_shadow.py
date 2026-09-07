@@ -45,6 +45,21 @@ def dat(label, default=None):
     v = live(label, default)
     return v.date() if isinstance(v, dt.datetime) else v
 
+# ---- sweep support: apply assumption overrides before anything is read ----
+# The sweep (scripts/audit_v2_sweep.py) re-runs this file with a different set of
+# inputs to check the model still behaves at points other than the base case.
+import os as _os, json as _json
+_OV = _os.environ.get('SHADOW_OVERRIDES_JSON')
+if _OV:
+    _ov = _json.loads(_OV)
+    for _lbl, _val in _ov.get('single', {}).items():
+        AS.cell(LBL[_lbl], VALCOL, _val)
+    for _lbl, _vals in _ov.get('year', {}).items():
+        for _k, _v in enumerate(_vals):
+            AS.cell(LBL[_lbl] + YOFF, 4 + _k, _v)
+    for _lbl, _col, _v in _ov.get('cell', []):
+        AS.cell(LBL[_lbl], _col, _v)
+
 open_cash = n(live('Opening cash at Jan-2026'))
 sal_infl  = n(live('Annual salary increase'))
 taxr      = n(live('Corporate income tax rate'))
@@ -338,9 +353,11 @@ CHECKS = [
 ]
 TOL = 0.02
 bad = 0
-print(f'shadow model vs workbook, case {CASE}, {len(CHECKS)} rows x {NM} months '
+QUIET = bool(_os.environ.get('SHADOW_QUIET'))   # the sweep wants S, not a comparison
+if not QUIET:
+  print(f'shadow model vs workbook, case {CASE}, {len(CHECKS)} rows x {NM} months '
       f'= {len(CHECKS)*NM} cells\n')
-for name, ws, row, key in CHECKS:
+  for name, ws, row, key in CHECKS:
     worst, wi = 0.0, None
     for i in range(NM):
         x = n(ws.cell(row, M0+i).value); y = S[key][i]
@@ -353,4 +370,4 @@ for name, ws, row, key in CHECKS:
         print(f'  MISMATCH  {name:<22} row {row:<3} worst {worst:>14,.2f} at '
               f'{md(wi).strftime("%b-%Y")}  workbook {n(ws.cell(row,M0+wi).value):>16,.2f}  '
               f'shadow {S[key][wi]:>16,.2f}')
-print(f'\n{len(CHECKS)-bad} of {len(CHECKS)} rows agree.  {bad} mismatched.')
+  print(f'\n{len(CHECKS)-bad} of {len(CHECKS)} rows agree.  {bad} mismatched.')
