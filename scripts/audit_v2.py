@@ -77,15 +77,21 @@ def main():
     src = os.path.abspath(sys.argv[1])
     tmp = tempfile.mkdtemp(prefix='audit_v2_')
     try:
-        recalced = {c: variant(src, tmp, c) for c in (1, 2)}
+        ws = openpyxl.load_workbook(src)['Assumptions']
+        has_switch = any(isinstance(ws.cell(r, 2).value, str) and ws.cell(r, 2).value.startswith('Case   1 = Base')
+                         for r in range(1, 12))
+        if has_switch:
+            recalced = {c: variant(src, tmp, c) for c in (1, 2)}
+        else:                      # single-case workbook: nothing to switch, recalculate as is
+            recalced = {0: recalc(src, os.path.join(tmp, 'o0'))}
         ok = phase1(recalced)
         print('\nPHASE 2  independent shadow model, cell by cell')
-        for case in (1, 2):
-            print(f'  case {case}:')
+        for case in sorted(recalced):
+            print(f'  case {case}:' if case else '  single case:')
             ok &= run('audit_v2_shadow.py', [recalced[case], str(case)])
         print('\nPHASE 3  accounting identities, signs and operating logic')
-        ok &= run('audit_v2_identities.py', [recalced[2]])
-        ok &= run('audit_v2_identities.py', [recalced[1]])
+        for case in sorted(recalced, reverse=True):
+            ok &= run('audit_v2_identities.py', [recalced[case]])
         print('\nPHASE 4  structure')
         ok &= run('audit_v2_structure.py', [src])
         print('\n' + ('AUDIT PASSED' if ok else 'AUDIT FAILED'))

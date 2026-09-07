@@ -87,8 +87,9 @@ AS_lbl={}
 for rr in range(1,200):
     b=AS.cell(rr,2).value
     if isinstance(b,str): AS_lbl.setdefault(b.strip(),rr)
-sell_from=AS.cell(AS_lbl['First month we can sell'],6).value.date()
-freeze_to=AS.cell(AS_lbl['Committed 2026 plan holds until'],6).value.date()
+VALCOL=6 if any(k.startswith('Case   1 = Base') for k in AS_lbl) else 4
+sell_from=AS.cell(AS_lbl['First month we can sell'],VALCOL).value.date()
+freeze_to=AS.cell(AS_lbl['Committed 2026 plan holds until'],VALCOL).value.date()
 chk('units never exceed demand',lambda i:(R34[i]<=R11[i]+0.5,f'{R34[i]} vs demand {R11[i]:.1f}'))
 chk('units never exceed selling capacity',lambda i:(R34[i]<=R24[i]+0.5,f'{R34[i]} vs {R24[i]:.1f}'))
 chk('units never exceed build capacity',lambda i:(R34[i]<=R31[i]+0.5,f'{R34[i]} vs {R31[i]:.1f}'))

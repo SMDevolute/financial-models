@@ -1,7 +1,7 @@
 # Tarnoc v2: how the model works, outcomes, vulnerabilities
 
 Written 2026-09-07, end of day. Replaces `tarnoc-v2-summary-2026-09-04.md`.
-Model: `models/Tarnoc_v2_2026-09-07.xlsx` at commit `98a119b`. Build: `scripts/build_tarnoc_v2.py`. Check: `python3 scripts/audit_v2.py models/Tarnoc_v2_2026-09-07.xlsx`.
+Three workbooks from one build script (`scripts/build_tarnoc_v2.py`, `MODE=both|base|aggr`): `models/Tarnoc_v2_base_2026-09-07.xlsx` (base case only, single Value column, no in-house lines or capex anywhere), `models/Tarnoc_v2_aggressive_2026-09-07.xlsx` (aggressive only), and `models/Tarnoc_v2_2026-09-07.xlsx` (both cases on the switch, the master). Check any of them with `python3 scripts/audit_v2.py <file>`; the audit detects which shape it is.
 The Drive copy `Tarnoc_v2_2026-09-03.xlsx` is behind everything since 3 September; upload the local file as a new version before sharing.
 
 ## How it works

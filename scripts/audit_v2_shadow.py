@@ -26,18 +26,23 @@ for r in range(1, 200):
     if isinstance(b, str):
         LBL.setdefault(b.strip(), r)
 
-def live(label):
-    """The live (per case) value of a single-value driver."""
+SINGLE = not any(k.startswith('Case   1 = Base') for k in LBL)   # one-case workbook: values in D, one year row
+VALCOL, YOFF = (4, 1) if SINGLE else (6, 3)
+
+def live(label, default=None):
+    """The live value of a single-value driver; `default` when the row is absent (base has no in-house block)."""
+    if label not in LBL and default is not None:
+        return default
     r = LBL[label]
-    return AS.cell(r, 6).value
+    return AS.cell(r, VALCOL).value
 
 def yearvals(label):
-    """The live row of a year table: label row, then Base, Aggressive, Live."""
+    """The live row of a year table: label row, then Base, Aggressive, Live (or a single Value row)."""
     r = LBL[label]
-    return {y: n(AS.cell(r + 3, 4 + k).value) for k, y in enumerate(YEARS)}
+    return {y: n(AS.cell(r + YOFF, 4 + k).value) for k, y in enumerate(YEARS)}
 
-def dat(label):
-    v = live(label)
+def dat(label, default=None):
+    v = live(label, default)
     return v.date() if isinstance(v, dt.datetime) else v
 
 open_cash = n(live('Opening cash at Jan-2026'))
@@ -70,13 +75,14 @@ comm = n(live('Installer partner commission, share of unit price'))
 ptr_ord = yearvals('Orders an installer partner brings in per month')
 ptr_pm  = n(live('Partners per partner manager'))
 pcap = n(live('Assembly partner capacity'))
-line1 = dat('In-house line 1 producing from'); line2 = dat('In-house line 2 producing from')
-lcap = n(live('Capacity per in-house line')); lcapex = n(live('Capex per in-house line'))
-tcapex = n(live('Tooling and automation, one-off with line 1'))
-lead_m = int(n(live('Months from paying for a line to it producing')))
-ops_line = n(live('Production operators per live line'))
-line_run = n(live('Facility and maintenance per live line'))
-dep_life = n(live('Depreciation life, straight line'))
+NEVER = dt.datetime(2035, 1, 1)
+line1 = dat('In-house line 1 producing from', NEVER); line2 = dat('In-house line 2 producing from', NEVER)
+lcap = n(live('Capacity per in-house line', 0)); lcapex = n(live('Capex per in-house line', 0))
+tcapex = n(live('Tooling and automation, one-off with line 1', 0))
+lead_m = int(n(live('Months from paying for a line to it producing', 12)))
+ops_line = n(live('Production operators per live line', 0))
+line_run = n(live('Facility and maintenance per live line', 0))
+dep_life = n(live('Depreciation life, straight line', 8))
 ship = n(live('Inbound shipping, Combi+ outdoor unit'))
 tiers = []
 for lb in ('Tier 1', 'Tier 2', 'Tier 3'):

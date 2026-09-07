@@ -26,7 +26,16 @@ import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter as gl
 
-OUT = os.environ.get('OUT', 'models/Tarnoc_v2_2026-09-07.xlsx')
+MODE = os.environ.get('MODE', 'both')          # both | base | aggr
+SINGLE = MODE in ('base', 'aggr')               # one case per workbook, no switch
+PICK = {'base': 0, 'aggr': 1}.get(MODE)         # which of (base, aggressive) a single-case file keeps
+HAS_LINES = MODE != 'base'                      # the base case has no in-house production at all
+CASE_NAME = {'base': 'Base case, EUR3m raise', 'aggr': 'Aggressive case, EUR10m raise'}.get(MODE, '')
+OUT = os.environ.get('OUT', {'base': 'models/Tarnoc_v2_base_2026-09-07.xlsx',
+                             'aggr': 'models/Tarnoc_v2_aggressive_2026-09-07.xlsx'}.get(MODE, 'models/Tarnoc_v2_2026-09-07.xlsx'))
+def only(modes, text):
+    """Summary text that belongs to some workbook variants only; s_text skips None."""
+    return text if MODE in modes.split(',') else None
 
 # ---------------------------------------------------------------------------
 # house style, lifted from the existing workbook
@@ -206,8 +215,8 @@ AS['B1'] = 'Tarnoc B.V.  Assumptions'
 AS['B1'].font = f(bold=True, color=WHITE); AS['B1'].fill = fill(FILL_BLACK)
 for c in range(3, 11):
     AS.cell(1, c).fill = fill(FILL_BLACK)
-AS['B2'] = ('Every driver lives here. Pale yellow cells are inputs, everything else is '
-            'calculated. The case switch on row 5 drives the whole model.')
+AS['B2'] = ('Every driver lives here. Pale yellow cells are inputs, everything else is calculated. '
+            + (f'This workbook is the {CASE_NAME.lower()}.' if SINGLE else 'The case switch on row 5 drives the whole model.'))
 AS['B2'].font = f(italic=True, color=GREY, size=9, name=NOTE_FONT)
 
 A, AY = {}, {}
@@ -222,6 +231,8 @@ def a_bar(text):
 
 def a_head(cols):
     global _ar
+    if SINGLE and [c for c, _ in cols] == ['D', 'E', 'F'] and cols[2][1] == 'Live':
+        cols = [('D', 'Value')]
     for cc in range(2, 11):
         AS.cell(_ar, cc).fill = fill(FILL_SUBSEC)
     for col, txt in cols:
@@ -243,24 +254,31 @@ def a_switch(key, lbl, value, note=None):
     A[key] = _ar; _ar += 1
     return _ar - 1
 
-# the case switch comes first so its address is fixed and quotable
-a_bar('SCENARIO SWITCH')
-CASE_ROW = a_switch('case', 'Case   1 = Base (EUR3m raise),  2 = Aggressive (EUR10m raise)', 1,
-                    'the master switch. Every Live column on this tab reads it')
-CASE = f'Assumptions!$E${CASE_ROW}'
+# the case switch comes first so its address is fixed and quotable (combined workbook only)
+CASE_ROW = CASE = None
+if not SINGLE:
+    a_bar('SCENARIO SWITCH')
+    CASE_ROW = a_switch('case', 'Case   1 = Base (EUR3m raise),  2 = Aggressive (EUR10m raise)', 1,
+                        'the master switch. Every Live column on this tab reads it')
+    CASE = f'Assumptions!$E${CASE_ROW}'
 
 def a_single(key, lbl, unit, base, aggr, fmt=NUM, note=None):
     global _ar
     AS.cell(_ar, 2, lbl).font = f(); AS.cell(_ar, 2).alignment = L
     AS.cell(_ar, 3, unit).font = f(color=GREY, size=9, name=NOTE_FONT)
-    for col, val in (('D', base), ('E', aggr)):
-        c = AS[f'{col}{_ar}']
-        c.value = val; c.number_format = fmt
-        c.font = f(); c.fill = fill(FILL_INPUT); c.alignment = R
-    lv = AS[f'F{_ar}']
-    lv.value = f'=IF({CASE}=2,E{_ar},D{_ar})'
-    lv.number_format = fmt; lv.font = f(bold=True); lv.alignment = R
-    lv.fill = fill(FILL_SUB)
+    if SINGLE:
+        c = AS[f'D{_ar}']
+        c.value = (base, aggr)[PICK]; c.number_format = fmt
+        c.font = f(bold=True); c.fill = fill(FILL_INPUT); c.alignment = R
+    else:
+        for col, val in (('D', base), ('E', aggr)):
+            c = AS[f'{col}{_ar}']
+            c.value = val; c.number_format = fmt
+            c.font = f(); c.fill = fill(FILL_INPUT); c.alignment = R
+        lv = AS[f'F{_ar}']
+        lv.value = f'=IF({CASE}=2,E{_ar},D{_ar})'
+        lv.number_format = fmt; lv.font = f(bold=True); lv.alignment = R
+        lv.fill = fill(FILL_SUB)
     if note:
         n = AS[f'J{_ar}']; n.value = note; n.number_format = TEXT
         n.font = f(italic=True, color=GREY, size=9, name=NOTE_FONT); n.alignment = L
@@ -271,7 +289,7 @@ def a_calc(key, lbl, unit, formula, fmt=NUM, note=None):
     global _ar
     AS.cell(_ar, 2, lbl).font = f(); AS.cell(_ar, 2).alignment = L
     AS.cell(_ar, 3, unit).font = f(color=GREY, size=9, name=NOTE_FONT)
-    c = AS[f'F{_ar}']
+    c = AS[f'{"D" if SINGLE else "F"}{_ar}']
     c.value = formula; c.number_format = fmt; c.font = f(bold=True); c.alignment = R
     c.fill = fill(FILL_SUB)
     if note:
@@ -295,6 +313,13 @@ def a_yeartable(key, lbl, unit, base, aggr, fmt=NUM, note=None):
         n = AS[f'J{_ar}']; n.value = note; n.number_format = TEXT
         n.font = f(italic=True, color=GREY, size=9, name=NOTE_FONT); n.alignment = L
     _ar += 1
+    if SINGLE:
+        AS.cell(_ar, 2, '    Value').font = f(bold=True)
+        for k, v in enumerate((base, aggr)[PICK]):
+            c = AS.cell(_ar, 4 + k, v)
+            c.number_format = fmt; c.font = f(bold=True); c.fill = fill(FILL_INPUT); c.alignment = R
+        AY[key] = (yr, _ar); _ar += 1
+        return AY[key]
     for tag, vals in (('Base', base), ('Aggressive', aggr)):
         AS.cell(_ar, 2, '    ' + tag).font = f()
         for k, v in enumerate(vals):
@@ -312,7 +337,7 @@ def a_yeartable(key, lbl, unit, base, aggr, fmt=NUM, note=None):
     return AY[key]
 
 def LV(k):
-    return f'Assumptions!$F${A[k]}'
+    return f'Assumptions!${"D" if SINGLE else "F"}${A[k]}'
 
 def SW(k):
     return f'Assumptions!$E${A[k]}'
@@ -445,31 +470,34 @@ a_single('ptr_per_pm', 'Partners per partner manager', 'partners', 18, 18)
 print(f'assumptions: upsell through selling, rows 4..{_ar-1}')
 
 # ---- build capacity and capex ---------------------------------------------
-a_bar('BUILD CAPACITY AND CAPEX  (assembly partner in both cases; in-house lines and capex in the aggressive case only)')
+a_bar('BUILD CAPACITY AND CAPEX  (assembly partner in both cases; in-house lines and capex in the aggressive case only)'
+      if not SINGLE else ('BUILD CAPACITY  (assembly partner only; this case has no in-house production)' if not HAS_LINES
+                          else 'BUILD CAPACITY AND CAPEX  (assembly partner first, two in-house lines from 2027-28)'))
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
 a_single('partner_cap', 'Assembly partner capacity', 'units/month', 650, 1000,
          note='what the partner has contracted to build for us')
-a_single('line1', 'In-house line 1 producing from', 'date',
-         dt.datetime(2035, 1, 1), dt.datetime(2027, 11, 1), DATE_FMT,
-         'base: set well past the horizon to mean never. Aggressive: paid for in November 2026, the first month after the raise lands')
-a_single('line2', 'In-house line 2 producing from', 'date',
-         dt.datetime(2035, 1, 1), dt.datetime(2028, 1, 1), DATE_FMT,
-         'aggressive: paid for in January 2027, so both lines run from early 2028 and most volume is built in-house')
-a_single('line_cap', 'Capacity per in-house line', 'units/month', 1000, 1000,
-         note='aggressive only: the base case has no in-house line, so rows 83 to 89 do nothing in base')
-a_single('line_capex', 'Capex per in-house line', 'EUR', 3000000, 3000000, EUR,
-         note='aggressive only. EUR250 per unit of annual capacity; peers run EUR250 to 600')
-a_single('tool_capex', 'Tooling and automation, one-off with line 1', 'EUR',
-         3000000, 3000000, EUR,
-         note='aggressive only. Automated test, balancing and handling, which is why a line runs on 25 operators rather than 35')
-a_single('lead_m', 'Months from paying for a line to it producing', 'months', 12, 12,
-         note='this lag is why the raise has to land before the volume does')
-a_single('ops_per_line', 'Production operators per live line', 'FTE', 25, 25,
-         note='assembly, balancing, leak test, run-in and electrical test, with the automation above; Intergas and Remeha run leaner still')
-a_single('line_run', 'Facility and maintenance per live line', 'EUR/month',
-         90000, 90000, EUR, 'aggressive only: the building and the machines, not the people')
-a_single('dep_life', 'Depreciation life, straight line', 'years', 8, 8,
-         note='aggressive only: the base case has no fixed assets')
+if HAS_LINES:
+    a_single('line1', 'In-house line 1 producing from', 'date',
+             dt.datetime(2035, 1, 1), dt.datetime(2027, 11, 1), DATE_FMT,
+             'base: set well past the horizon to mean never. Aggressive: paid for in November 2026, the first month after the raise lands')
+    a_single('line2', 'In-house line 2 producing from', 'date',
+             dt.datetime(2035, 1, 1), dt.datetime(2028, 1, 1), DATE_FMT,
+             'aggressive: paid for in January 2027, so both lines run from early 2028 and most volume is built in-house')
+    a_single('line_cap', 'Capacity per in-house line', 'units/month', 1000, 1000,
+             note=('aggressive only: the base case has no in-house line, so the rows below do nothing in base' if not SINGLE else 'two lines of this size from 2027-28'))
+    a_single('line_capex', 'Capex per in-house line', 'EUR', 3000000, 3000000, EUR,
+             note=('aggressive only. ' if not SINGLE else '') + 'EUR250 per unit of annual capacity; peers run EUR250 to 600')
+    a_single('tool_capex', 'Tooling and automation, one-off with line 1', 'EUR',
+             3000000, 3000000, EUR,
+             note=('aggressive only. ' if not SINGLE else '') + 'Automated test, balancing and handling, which is why a line runs on 25 operators rather than 35')
+    a_single('lead_m', 'Months from paying for a line to it producing', 'months', 12, 12,
+             note='this lag is why the raise has to land before the volume does')
+    a_single('ops_per_line', 'Production operators per live line', 'FTE', 25, 25,
+             note='assembly, balancing, leak test, run-in and electrical test, with the automation above; Intergas and Remeha run leaner still')
+    a_single('line_run', 'Facility and maintenance per live line', 'EUR/month',
+             90000, 90000, EUR, ('aggressive only: ' if not SINGLE else '') + 'the building and the machines, not the people')
+    a_single('dep_life', 'Depreciation life, straight line', 'years', 8, 8,
+             note=('aggressive only: the base case has no fixed assets' if not SINGLE else 'straight line from the month a line is paid for'))
 
 # ---- bill of materials ----------------------------------------------------
 a_bar('BILL OF MATERIALS  (unit cost falls as volume crosses each tier)')
@@ -557,7 +585,7 @@ LM = MC[-1]
 bar(RF, 5, 'DEMAND')
 line(RF, 6, 'Marketing spend', 'EUR/mo',
      lambda cl, i: f'=IF({cl}$3<{LV("sell_from")},0,' + YL('mkt', cl) + ')',
-     EUR, 'link', note='from the Assumptions year table, per the case switch')
+     EUR, 'link', note=('from the Assumptions year table, per the case switch' if not SINGLE else 'from the Assumptions year table'))
 line(RF, 7, 'Installed base at start of month', 'units',
      lambda cl, i: '=0' if i == 0 else f'={MC[i-1]}41', annual='end')
 line(RF, 8, 'Cost per lead', 'EUR',
@@ -607,12 +635,13 @@ line(RF, 24, 'Selling capacity used', '%',
 
 bar(RF, 27, 'BUILD CAPACITY')
 line(RF, 28, 'Assembly partner', 'units/mo', lambda cl, i: f'={LV("partner_cap")}',
-     kind='link', note='the partner carries the ramp while the in-house lines are built')
-line(RF, 29, 'In-house lines producing', 'lines',
-     lambda cl, i: f'=IF({cl}$3>={LV("line1")},1,0)+IF({cl}$3>={LV("line2")},1,0)',
-     annual='end')
-line(RF, 30, 'In-house lines', 'units/mo', lambda cl, i: f'={cl}29*{LV("line_cap")}')
-line(RF, 31, 'Build capacity', 'units/mo', lambda cl, i: f'={cl}28+{cl}30', total=True)
+     kind='link', note=('the partner carries the ramp while the in-house lines are built' if HAS_LINES else 'the partner builds every unit in this case'))
+if HAS_LINES:
+    line(RF, 29, 'In-house lines producing', 'lines',
+         lambda cl, i: f'=IF({cl}$3>={LV("line1")},1,0)+IF({cl}$3>={LV("line2")},1,0)',
+         annual='end')
+    line(RF, 30, 'In-house lines', 'units/mo', lambda cl, i: f'={cl}29*{LV("line_cap")}')
+line(RF, 31, 'Build capacity', 'units/mo', lambda cl, i: (f'={cl}28+{cl}30' if HAS_LINES else f'={cl}28'), total=True)
 
 bar(RF, 33, 'UNITS SOLD')
 line(RF, 34, 'Units sold', 'units',
@@ -732,8 +761,9 @@ line(PE, 11, 'Sales and marketing', 'FTE',
 line(PE, 12, 'Supply chain and logistics', 'FTE',
      lambda cl, i: f'=ROUND({RFY}!{cl}34*12/{LV("u_per_sc")},0)', annual='end',
      note='buying, planning, inbound quality and warehousing')
-line(PE, 13, 'Production operators', 'FTE',
-     lambda cl, i: f'={RFY}!{cl}29*{LV("ops_per_line")}', annual='end')
+if HAS_LINES:
+    line(PE, 13, 'Production operators', 'FTE',
+         lambda cl, i: f'={RFY}!{cl}29*{LV("ops_per_line")}', annual='end')
 line(PE, 14, 'Customer support', 'FTE',
      lambda cl, i: f'=ROUND({RFY}!{cl}41/{LV("ib_per_sup")},0)', annual='end',
      note='inbound calls follow the installed base, not sales')
@@ -781,8 +811,8 @@ print('cogs and personnel written')
 # ===========================================================================
 OP = sheet('OPEX', label_w=44, freeze='E4')
 title(OP, 'Tarnoc B.V.  Operating Expenses',
-      'People come from the Personnel tab. Everything else scales with headcount, '
-      'partners signed or the production lines that are live.')
+      'People come from the Personnel tab. Everything else scales with headcount'
+      + (', partners signed or the production lines that are live.' if HAS_LINES else ' or partners signed.'))
 datebar(OP)
 
 # ---- the committed 2026 plan, held fixed line by line --------------------
@@ -843,9 +873,10 @@ line(OP, 22, 'Offices, IT and travel', 'EUR',
 line(OP, 23, 'Recruitment', 'EUR',
      lambda cl, i: ('=0' if i == 0 else
                     f'=MAX(0,Personnel!{cl}20-Personnel!{pv(i)}20)*' + infl(cl, 'recruit')), EUR)
-line(OP, 24, 'Production line facility and maintenance', 'EUR',
-     lambda cl, i: f'={RFY}!{cl}29*{LV("line_run")}', EUR,
-     note='only once a line is actually producing')
+if HAS_LINES:
+    line(OP, 24, 'Production line facility and maintenance', 'EUR',
+         lambda cl, i: f'={RFY}!{cl}29*{LV("line_run")}', EUR,
+         note='only once a line is actually producing')
 line(OP, 25, 'Finance and legal', 'EUR', lambda cl, i: '=' + infl(cl, 'g_fin'), EUR)
 line(OP, 26, 'Other general', 'EUR', lambda cl, i: '=' + infl(cl, 'g_other'), EUR)
 line(OP, 27, 'Total', 'EUR',
@@ -883,10 +914,13 @@ line(FS, 14, 'Total operating expenses', 'EUR', lambda cl, i: f'=SUM({cl}11:{cl}
 line(FS, 16, 'EBITDA', 'EUR', lambda cl, i: f'={cl}8+{cl}14', EUR, grand=True)
 line(FS, 17, 'EBITDA margin', '%', lambda cl, i: f'=IFERROR({cl}16/{cl}6,0)', PCT1,
      'ratio', annual=lambda a: f'=IFERROR({a}16/{a}6,0)')
-line(FS, 19, 'Depreciation', 'EUR',
-     lambda cl, i: ('=0' if i == 0 else
-                    f'=-{pv(i)}63/({LV("dep_life")}*12)'), EUR,
-     note='straight line on the gross book value carried into the month')
+if HAS_LINES:
+    line(FS, 19, 'Depreciation', 'EUR',
+         lambda cl, i: ('=0' if i == 0 else
+                        f'=-{pv(i)}63/({LV("dep_life")}*12)'), EUR,
+         note='straight line on the gross book value carried into the month')
+else:
+    line(FS, 19, 'Depreciation', 'EUR', lambda cl, i: '=0', EUR, note='no fixed assets in this case')
 line(FS, 20, 'Interest on the loan', 'EUR',
      lambda cl, i: ('=0' if i == 0 else f'=-{pv(i)}51*{LV("loan_rate")}/12'), EUR)
 line(FS, 21, 'Profit before tax', 'EUR', lambda cl, i: f'={cl}16+{cl}19+{cl}20', EUR)
@@ -965,14 +999,17 @@ line(FS, 59, 'Check   funding received equals the funding inputs, must be nil', 
      note='cumulative equity and loan received against what the funding block says should have arrived by now')
 
 bar(FS, 60, 'SUPPORTING SCHEDULES')
-line(FS, 61, 'Capital expenditure in the month', 'EUR',
-     lambda cl, i: (f'=IF(AND(YEAR({cl}$3)=YEAR(EDATE({LV("line1")},-{LV("lead_m")})),'
-                    f'MONTH({cl}$3)=MONTH(EDATE({LV("line1")},-{LV("lead_m")}))),'
-                    f'{LV("line_capex")}+{LV("tool_capex")},0)'
-                    f'+IF(AND(YEAR({cl}$3)=YEAR(EDATE({LV("line2")},-{LV("lead_m")})),'
-                    f'MONTH({cl}$3)=MONTH(EDATE({LV("line2")},-{LV("lead_m")}))),'
-                    f'{LV("line_capex")},0)'), EUR,
-     note='a line is paid for the lead time before it can build anything')
+if HAS_LINES:
+    line(FS, 61, 'Capital expenditure in the month', 'EUR',
+         lambda cl, i: (f'=IF(AND(YEAR({cl}$3)=YEAR(EDATE({LV("line1")},-{LV("lead_m")})),'
+                        f'MONTH({cl}$3)=MONTH(EDATE({LV("line1")},-{LV("lead_m")}))),'
+                        f'{LV("line_capex")}+{LV("tool_capex")},0)'
+                        f'+IF(AND(YEAR({cl}$3)=YEAR(EDATE({LV("line2")},-{LV("lead_m")})),'
+                        f'MONTH({cl}$3)=MONTH(EDATE({LV("line2")},-{LV("lead_m")}))),'
+                        f'{LV("line_capex")},0)'), EUR,
+         note='a line is paid for the lead time before it can build anything')
+else:
+    line(FS, 61, 'Capital expenditure in the month', 'EUR', lambda cl, i: '=0', EUR, note='no in-house production in this case, so no capex')
 line(FS, 62, 'Accumulated depreciation', 'EUR',
      lambda cl, i: (f'=-{cl}19' if i == 0 else f'={pv(i)}62-{cl}19'), EUR, annual='end')
 line(FS, 63, 'Gross book value', 'EUR',
@@ -1054,8 +1091,9 @@ d_line(26, 'Revenue per person',
 
 d_bar(28, 'CASH AND FUNDING')
 d_line(29, 'Equity raised in the year', lambda y: yc('Financial Statements', 35, y), EUR)
-d_line(30, 'Capital expenditure', lambda y: '=-' + yc('Financial Statements', 61, y)[1:], EUR,
-       note='shown negative like every other cost on this tab')
+if HAS_LINES:
+    d_line(30, 'Capital expenditure', lambda y: '=-' + yc('Financial Statements', 61, y)[1:], EUR,
+           note='shown negative like every other cost on this tab')
 d_line(31, 'Cash at year end', lambda y: yc('Financial Statements', 40, y), EUR, total=True)
 d_line(32, 'Lowest cash during the year',
        lambda y: (f"=MIN('Financial Statements'!{YMONTHS[y][0]}40:"
@@ -1097,8 +1135,9 @@ su_line(40, 'Cash at the start of January 2026', f'={LV("open_cash")}')
 su_line(41, 'Equity raised up to that month', f'={TO_TROUGH(35)}')
 su_line(42, 'Convertible loan drawn', f'={TO_TROUGH(36)}')
 su_line(43, 'Total money available', '=SUM(D40:D42)', tot=True)
-su_line(44, 'Production lines and tooling', f'={TO_TROUGH(61)}',
-        note='in-house production lines paid for up to the low point; nil in a case with no lines')
+if HAS_LINES:
+    su_line(44, 'Production lines and tooling', f'={TO_TROUGH(61)}',
+            note='in-house production lines paid for up to the low point; nil in a case with no lines')
 su_line(45, 'Absorbed by operations and working capital', f'=-{TO_TROUGH(32)}',
         note='trading losses plus the receivables the ramp ties up, less the payables it creates')
 su_line(46, 'Cash still in the bank at the low point', f'=D37',
@@ -1166,9 +1205,11 @@ for r, txt in enumerate([
 ], start=13):
     HR.cell(r, 3, txt).font = f()
 
-h_bar(18, 'THE SWITCH')
-HR.cell(19, 3, f'Assumptions row {CASE_ROW}, cell E{CASE_ROW}. Case: 1 is the base plan on a EUR3m raise, '
-               '2 is the aggressive plan on EUR10m. Every Live column on Assumptions follows it.').font = f()
+h_bar(18, 'THE CASE' if SINGLE else 'THE SWITCH')
+HR.cell(19, 3, (f'This workbook holds the {"base" if MODE == "base" else "aggressive"} case only ({"EUR3m" if MODE == "base" else "EUR10m"} raise). The Value column on Assumptions is the plan; there is no case switch.'
+                if SINGLE else
+                f'Assumptions row {CASE_ROW}, cell E{CASE_ROW}. Case: 1 is the base plan on a EUR3m raise, '
+                '2 is the aggressive plan on EUR10m. Every Live column on Assumptions follows it.')).font = f()
 HR.cell(20, 3, 'The bill of materials is priced on two-year volume (this year plus next), which assumes a volume '
                'commitment to the supplier. There is no switch for this; it is how the COGS tab works.').font = f()
 
@@ -1177,7 +1218,7 @@ for r, txt in enumerate([
     'Units sold is not typed in. Three numbers are worked out for every month and the smallest one wins:',
     '    1.  Demand.  Marketing spend divided by cost per lead, through the two conversion rates, plus the orders installer partners bring in on their own jobs.',
     '    2.  What we can sell.  Our own reps times quota, plus installer partners times units each, capped by the direct and channel mix. No ramp-up: reps and partners sell at full rate from the month they join.',
-    '    3.  What we can build.  The assembly partner, plus any in-house line that is producing.',
+    ('    3.  What we can build.  The assembly partner, plus any in-house line that is producing.' if HAS_LINES else '    3.  What we can build.  The assembly partner\'s contracted volume.'),
     'There is no market size or market share anywhere in the model.',
 ], start=23):
     HR.cell(r, 3, txt).font = f()
@@ -1191,8 +1232,8 @@ for r, txt in enumerate([
     'Unit cost falls in steps, not smoothly. The turbineketel bill of materials is EUR9,984 below 5,000 units a year, '
     'EUR7,069 from 5,000 and EUR4,998 from 10,000. Almost all of the profit in the later years comes from crossing '
     'the second step, so that assumption carries more weight than any other in the model.',
-    'A production line is paid for twelve months before it can build anything. That lag is why the timing of the raise '
-    'matters as much as the size.',
+    *(['A production line is paid for twelve months before it can build anything. That lag is why the timing of the raise '
+       'matters as much as the size.'] if HAS_LINES else []),
     'Every month is a real column. There are no annual-only columns, so nothing can be hardcoded in a year that the '
     'monthly build does not see.',
 ], start=31):
@@ -1215,6 +1256,8 @@ def cv(row, text, size=10, bold=False, color=WHITE):
 cv(6, 'TARNOC B.V.', 20, True)
 cv(8, 'Financial Model', 12)
 cv(9, 'Built from scratch, September 2026', 9, color=GREY)
+if SINGLE:
+    cv(10, CASE_NAME, 10, True)
 cv(12, 'Currency', 9, color=GREY); CV.cell(12, 3, 'EUR, ex VAT unless stated').font = Font(name=FONT, size=9, color=WHITE)
 cv(13, 'Period', 9, color=GREY); CV.cell(13, 3, 'January 2026 to December 2030, monthly').font = Font(name=FONT, size=9, color=WHITE)
 cv(14, 'Fiscal year', 9, color=GREY); CV.cell(14, 3, 'Calendar').font = Font(name=FONT, size=9, color=WHITE)
@@ -1233,14 +1276,14 @@ SM.column_dimensions['C'].width = 20
 SM.column_dimensions['D'].width = 15
 for cl in 'EFG':
     SM.column_dimensions[cl].width = 14
-SM['B1'] = 'Tarnoc B.V.  Summary'
+SM['B1'] = 'Tarnoc B.V.  Summary' + (f'  ({CASE_NAME})' if SINGLE else '')
 for cl in 'BCDEFG':
     SM[f'{cl}1'].fill = fill(FILL_BLACK)
 SM['B1'].font = f(bold=True, color=WHITE)
-SM['B2'] = 'Written 7 September 2026. The results table is live and follows the case switch on Assumptions; the text is not.'
+SM['B2'] = 'Written 7 September 2026. The results table is live; the text is not.' if SINGLE else 'Written 7 September 2026. The results table is live and follows the case switch on Assumptions; the text is not.'
 SM['B2'].font = f(italic=True, color=GREY, size=9, name=NOTE_FONT)
 SM['D2'] = 'Case shown:'; SM['D2'].font = f(bold=True); SM['D2'].alignment = R
-SM['E2'] = '=IF(Assumptions!$E$5=2,"Aggressive, EUR10m raise","Base, EUR3m raise")'
+SM['E2'] = CASE_NAME if SINGLE else '=IF(Assumptions!$E$5=2,"Aggressive, EUR10m raise","Base, EUR3m raise")'
 SM['E2'].font = f(bold=True)
 SM['D3'] = 'BOM priced on:'; SM['D3'].font = f(bold=True); SM['D3'].alignment = R
 SM['E3'] = 'two-year volume commitment'; SM['E3'].font = f(bold=True)
@@ -1253,6 +1296,8 @@ def s_bar(text):
         SM.cell(r, c).fill = fill(FILL_BLACK)
 def s_text(*lines):
     for t in lines:
+        if t is None:
+            continue
         _r[0] += 1
         c = SM.cell(_r[0], 2, t); c.font = f(); c.alignment = L
 def s_gap():
@@ -1261,22 +1306,23 @@ def s_gap():
 s_bar('WHAT THIS IS')
 s_text('A monthly model of Tarnoc from January 2026 to December 2030. Every figure is calculated from the Assumptions tab.',
        'The only typed numbers are the assumptions, the committed 2026 plan (OPEX rows 38 to 43) and the back-office headcount (Personnel row 17).',
-       'Two cases on one switch (Assumptions E5): base with a EUR3m raise, aggressive with EUR10m. The BOM is priced on two-year volume in both.',
+       (f'This workbook holds the {"base" if MODE == "base" else "aggressive"} case only ({"EUR3m" if MODE == "base" else "EUR10m"} raise). The BOM is priced on two-year volume.' if SINGLE else 'Two cases on one switch (Assumptions E5): base with a EUR3m raise, aggressive with EUR10m. The BOM is priced on two-year volume in both.'),
        'Prices, BOM tiers, service and upsell tables, shipping, the 2026 plan, the subsidy, the raise amounts and working-capital days are the client\'s own figures.')
 s_gap()
 s_bar('HOW UNITS SOLD ARE CALCULATED')
 s_text('Units sold in a month is the lowest of three numbers:',
        '1. Demand: marketing spend / EUR120 per lead x 50% qualified x 40% won, plus the orders installer partners bring in themselves (1 a month each in 2027, 4 by 2030).',
        '2. Selling capacity: own reps x 20 a month for the direct share of sales, installer partners x 8 a month for the rest. Direct share 80% in 2027, 50% in 2028, 35%, then 30%.',
-       '3. Build capacity: the assembly partner\'s contracted volume, plus 1,000 a month per in-house line once it produces (aggressive case only).')
+       ('3. Build capacity: the assembly partner\'s contracted volume. This case has no in-house production.' if not HAS_LINES else
+        '3. Build capacity: the assembly partner\'s contracted volume, plus 1,000 a month per in-house line once it produces' + (' (aggressive case only).' if not SINGLE else '.')))
 s_gap()
 s_bar('WHAT FOLLOWS FROM UNITS')
 s_text('Revenue: units x price, plus upsell, plus installation passed through to the installer at cost, plus service contracts on the installed base.',
        'Cost of sales: BOM at the tier reached by this year plus next year\'s units, outdoor unit, shipping, upsell cost, installation, service parts, 10% commission on channel sales.',
-       'The BOM is charged in full on every unit whether the partner or an own line builds it. The lines add capacity, operators and facility cost, not a cost saving.',
-       'Headcount: each team is sized by what creates its work (units, installed base, partners signed, marketing spend, production lines). R&D and the back office are typed per year.')
+       only('both,aggr', 'The BOM is charged in full on every unit whether the partner or an own line builds it. The lines add capacity, operators and facility cost, not a cost saving.'),
+       'Headcount: each team is sized by what creates its work (units, installed base, partners signed, marketing spend' + (', production lines' if HAS_LINES else '') + '). R&D and the back office are typed per year.')
 s_gap()
-s_bar('RESULTS, CASE SHOWN')
+s_bar('RESULTS' if SINGLE else 'RESULTS, CASE SHOWN')
 _r[0] += 1; hr = _r[0]
 for k, y in enumerate(YEARS):
     c = SM.cell(hr, 3 + k, y); c.font = f(bold=True, color=WHITE); c.fill = fill(FILL_BLACK); c.alignment = R
@@ -1302,19 +1348,21 @@ _r[0] += 1; r = _r[0]
 SM.cell(r, 2, 'Lowest cash before the raise').font = f()
 SM.cell(r, 3, '=Dashboard!D39').number_format = EUR; SM.cell(r, 3).font = f(); SM.cell(r, 3).alignment = R
 s_gap()
-s_bar('BOTH CASES SIDE BY SIDE  (typed on 7 September 2026; the table above is live)')
-s_text('Base, EUR3m: 350 / 1,350 / 4,100 / 7,400 units in 2027 to 2030, EUR127m revenue in 2030. Gross margin 10%, 25%, 37%, 37%. EBITDA -2.5m, +0.8m, +18m, +34m. 95 people.',
-       '     Cash low EUR0.6m in December 2027, about two months of cost; 81% of the raise used.',
-       'Aggressive, EUR10m: 2,800 / 6,900 / 11,700 / 18,800 units, EUR321m revenue in 2030. Gross margin 28%, 38%, 37%, 37%. EBITDA +4.8m, +23m, +45m, +79m. 301 people.',
-       '     EUR9m of capex in Nov 2026 and Jan 2027 for two automated lines. Cash low EUR1.0m in January 2027, six weeks of cost; 90% of the raise used.',
-       'Gross margin steps from about 10% to 25% the year two-year volume passes 5,000 units, and to 37% past 10,000. Base: 2028 and 2029. Aggressive: 2027 and 2028.')
+s_bar('THIS CASE IN TWO LINES  (typed on 7 September 2026; the table above is live)' if SINGLE else 'BOTH CASES SIDE BY SIDE  (typed on 7 September 2026; the table above is live)')
+s_text(only('both,base', 'Base, EUR3m: 350 / 1,350 / 4,100 / 7,400 units in 2027 to 2030, EUR127m revenue in 2030. Gross margin 10%, 25%, 37%, 37%. EBITDA -2.5m, +0.8m, +18m, +34m. 95 people.'),
+       only('both,base', '     Cash low EUR0.6m in December 2027, about two months of cost; 81% of the raise used.'),
+       only('both,aggr', 'Aggressive, EUR10m: 2,800 / 6,900 / 11,700 / 18,800 units, EUR321m revenue in 2030. Gross margin 28%, 38%, 37%, 37%. EBITDA +4.8m, +23m, +45m, +79m. 301 people.'),
+       only('both,aggr', '     EUR9m of capex in Nov 2026 and Jan 2027 for two automated lines. Cash low EUR1.0m in January 2027, six weeks of cost; 90% of the raise used.'),
+       {'base': 'Gross margin steps from about 10% to 25% the year two-year volume passes 5,000 units (2028), and to 37% past 10,000 (2029).',
+        'aggr': 'Gross margin steps from about 10% to 25% the year two-year volume passes 5,000 units (2027), and to 37% past 10,000 (2028).'}.get(MODE,
+        'Gross margin steps from about 10% to 25% the year two-year volume passes 5,000 units, and to 37% past 10,000. Base: 2028 and 2029. Aggressive: 2027 and 2028.'))
 s_gap()
 s_bar('DOES IT MAKE SENSE')
 s_text('Mechanically, yes. Both cases pass the full audit: no formula errors, balance sheet ties every month, funding received equals the inputs, 116 rows agree with an independent re-implementation.',
-       'Commercially it holds on one condition: the supplier prices the BOM on two-year volume. Without that, 2027 and 2028 are priced at EUR9,984 a unit and base does not close on EUR3m.',
-       'Soft spot 1. Base turns on about 500 units: 2028 plus 2029 volume is 5,500 against a 5,000 tier. Below 5,000, 2028 costs EUR2,900 more per unit and EBITDA goes back to about -3m.',
-       'Soft spot 2. Aggressive spends EUR9m on lines that, as modelled, save nothing. The answer to "why build" has to be strategic, or a partner fee the client has not given us.',
-       'Soft spot 3. Aggressive is profitable in its first selling year because two-year volume puts 2027 straight into the second tier. An investor will want the supplier contract before believing it.')
+       'Commercially it holds on one condition: the supplier prices the BOM on two-year volume. Without that, 2027 and 2028 are priced at EUR9,984 a unit' + (' and base does not close on EUR3m.' if MODE != 'aggr' else ' and the first two years lose their margin.'),
+       only('both,base', 'Soft spot 1. Base turns on about 500 units: 2028 plus 2029 volume is 5,500 against a 5,000 tier. Below 5,000, 2028 costs EUR2,900 more per unit and EBITDA goes back to about -3m.'),
+       only('both,aggr', 'Soft spot 2. Aggressive spends EUR9m on lines that, as modelled, save nothing. The answer to "why build" has to be strategic, or a partner fee the client has not given us.'),
+       only('both,aggr', 'Soft spot 3. Aggressive is profitable in its first selling year because two-year volume puts 2027 straight into the second tier. An investor will want the supplier contract before believing it.'))
 s_gap()
 s_bar('ASSUMPTIONS CHECKED AGAINST THE MARKET  (research of 4 September 2026, sources in docs/tarnoc-assumptions-research-2026-09-04.md)')
 _r[0] += 1; hr = _r[0]
@@ -1333,7 +1381,7 @@ RESEARCH = [
  ('Rep quota', '20 closes a month', 'high', 'US HVAC comfort advisors 8-10 a month, top decile 11-17; solar reps 2-3 in year one'),
  ('Direct share path', '80 / 50 / 35 / 30%', 'no precedent', 'Brands are installer-led from day one or stay mostly direct; those that shift still hold 40-60% direct in year four'),
  ('Marketing spend as share of revenue', 'about 2-4%', 'low', 'HVAC 6% (10-15% in growth), NIBE selling costs 14.6%; 6-10% early and 3-5% later is typical'),
- ('Marketing team', '2 + 1 per EUR3m spend', 'low', 'Cross-industry: 1 marketer per EUR1-1.5m of media, or a 10-12% agency line'),
+ ('Marketing team', '2 + 1 per EUR1.5m of yearly spend', 'supported', 'Cross-industry: 1 marketer per EUR1-1.5m of media, or a 10-12% agency line'),
  ('Aggressive volume 2030', '18,800 units', 'ambitious', 'NL sells about 43k hybrids and 425k boilers a year; Quatt reached about 12k a year in year four; Octopus 18k in the UK by year three'),
  ('Units one field engineer looks after', '750', 'supported', '600-900 at 4.5-5.5 visits a day including breakdowns'),
  ('Service contract attach rate', '88% (client)', 'high', '76% of new-boiler buyers hold a contract (Panteia/ACM 2025); 65-80% is the range'),
@@ -1354,10 +1402,13 @@ RESEARCH = [
  ('Wage growth; other cost inflation', '5%; 10% a year', 'wages fine, costs high', 'CPB wages 3.2-4.2%; CPI 2.1-3%; other costs left at 10% on instruction'),
  ('Office, IT, travel per head; recruitment', 'EUR700 / 250 / 300; EUR8,000', 'supported', 'NFC Index EUR760 per FTE; recruitment average EUR4,494, agency 15-25% of salary'),
  ('R&D team, aggressive', '10 then 16 a year, 58 by 2030', 'supported', '60-90 at EUR300m revenue is typical, or an explicit outsourced engineering line'),
- ('Back office', '3 to 8 people', 'fine for base, low for aggressive', 'For 289 staff, 14-22; HR alone needs 4-6'),
+ ('Back office', '3 to 8 people', {'base': 'supported', 'aggr': 'low'}.get(MODE, 'fine for base, low for aggressive'), 'Fine for 95 staff; for 300 staff 14-22, and HR alone needs 4-6'),
  ('Revenue per head, aggressive', 'EUR1.1m', 'high', 'Incumbents EUR175-333k; outsourced assembly and pass-through installation justify EUR400-700k'),
 ]
+AGGR_ONLY = ('Aggressive volume 2030', 'In-house line', 'Operators per line; facility', 'Depreciation', 'R&D team, aggressive', 'Revenue per head, aggressive')
 for a, mv, verdict, ev in RESEARCH:
+    if MODE == 'base' and a in AGGR_ONLY:
+        continue
     _r[0] += 1; r = _r[0]
     SM.cell(r, 2, a).font = f(); SM.cell(r, 2).alignment = L
     SM.cell(r, 3, mv).font = f(); SM.cell(r, 3).alignment = L
@@ -1367,17 +1418,17 @@ s_gap()
 s_text('The research briefs described the product as a gas boiler; it is a turbine heat pump. That weakens the "high" verdicts on the close rate and price, and does not affect the rest.')
 s_gap()
 s_bar('WHERE THE PLAN IS VULNERABLE')
-s_text('Base: the 5,000-unit cliff in 2028 (2028 plus 2029 volume is 5,500 against the 5,000 tier) and two months of cash cover in December 2027. A one-quarter delay in the 2029 ramp costs the margin step.',
-       'Aggressive: six weeks of cash cover in January 2027 after EUR9m of capex, with the first unit sold that month. 90% use of the raise and 2-3 months of cover cannot both hold at EUR10m.',
+s_text(only('both,base', 'Base: the 5,000-unit cliff in 2028 (2028 plus 2029 volume is 5,500 against the 5,000 tier) and two months of cash cover in December 2027. A one-quarter delay in the 2029 ramp costs the margin step.'),
+       only('both,aggr', 'Aggressive: six weeks of cash cover in January 2027 after EUR9m of capex, with the first unit sold that month. 90% use of the raise and 2-3 months of cover cannot both hold at EUR10m.'),
        'Both: the turbineketel sells below its tier-1 BOM. A forced price cut makes the first tier worse.',
-       'Aggressive headcount: 16 to 89 people in 2027 and 36 installers signed the same year. That risk is not in the numbers.',
+       only('both,aggr', 'Aggressive headcount: 16 to 89 people in 2027 and 36 installers signed the same year. That risk is not in the numbers.'),
        'Turbineketel service prices (EUR60 and EUR90 a year) are below the Dutch market. Upside if raised.')
 s_gap()
 s_bar('STILL NEEDED FROM THE CLIENT')
 s_text('Supplier quotes behind the three BOM tiers, and confirmation the supplier will price on a two-year volume commitment.',
-       'What the assembly partner charges per unit and whether it is inside the BOM tiers, so building in-house can be given its real saving.',
+       only('both,aggr', 'What the assembly partner charges per unit and whether it is inside the BOM tiers, so building in-house can be given its real saving.'),
        'Confirmation of the installer deal: 10% of the unit price on top of the installation fee.',
-       'A view on the direct-to-installer shift (80 / 50 / 35 / 30% direct) and on 18,800 units by 2030 for the aggressive case.')
+       'A view on the direct-to-installer shift (80 / 50 / 35 / 30% direct)' + (' and on 18,800 units by 2030 for the aggressive case.' if MODE != 'base' else '.'))
 _r[0] += 2
 SM.cell(_r[0], 2, 'Detail: How to read me for the colour code, Dashboard for the year view, Assumptions for every input, docs/ in the repository for the research and the formula reviews.').font = f(italic=True, color=GREY, size=9, name=NOTE_FONT)
 SM.sheet_view.zoomScale = 110
