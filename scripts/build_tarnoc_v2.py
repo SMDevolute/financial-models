@@ -1225,8 +1225,10 @@ cv(21, 'STRICTLY CONFIDENTIAL', 10, True, RED)
 SM = wb.create_sheet('Summary')
 SM.sheet_view.showGridLines = False
 SM.column_dimensions['A'].width = 3
-SM.column_dimensions['B'].width = 44
-for cl in 'CDEFG':
+SM.column_dimensions['B'].width = 46
+SM.column_dimensions['C'].width = 20
+SM.column_dimensions['D'].width = 15
+for cl in 'EFG':
     SM.column_dimensions[cl].width = 14
 SM['B1'] = 'Tarnoc B.V.  Summary'
 for cl in 'BCDEFG':
@@ -1257,19 +1259,19 @@ s_bar('WHAT THIS IS')
 s_text('A monthly model of Tarnoc from January 2026 to December 2030. Every figure is calculated from the Assumptions tab.',
        'The only typed numbers are the assumptions, the committed 2026 plan (OPEX rows 38 to 43) and the back-office headcount (Personnel row 17).',
        'Two cases on one switch (Assumptions E5): base with a EUR3m raise, aggressive with EUR10m. The BOM is priced on two-year volume in both.',
-       'Prices, BOM tiers, service and upsell tables, shipping, the 2026 plan, the raise amounts and working-capital days are the client\'s own figures.')
+       'Prices, BOM tiers, service and upsell tables, shipping, the 2026 plan, the subsidy, the raise amounts and working-capital days are the client\'s own figures.')
 s_gap()
 s_bar('HOW UNITS SOLD ARE CALCULATED')
 s_text('Units sold in a month is the lowest of three numbers:',
-       '1. Demand: marketing spend / cost per lead x lead-to-qualified x qualified-to-won, plus orders the installer partners bring in themselves.',
-       '2. Selling capacity: own reps x quota for the direct share of sales, installer partners x units each for the rest. Direct share falls year by year.',
+       '1. Demand: marketing spend / EUR120 per lead x 50% qualified x 40% won, plus the orders installer partners bring in themselves (1 a month each in 2027, 4 by 2030).',
+       '2. Selling capacity: own reps x 20 a month for the direct share of sales, installer partners x 8 a month for the rest. Direct share 80% in 2027, 50% in 2028, 35%, then 30%.',
        '3. Build capacity: the assembly partner\'s contracted volume, plus 1,000 a month per in-house line once it produces (aggressive case only).')
 s_gap()
 s_bar('WHAT FOLLOWS FROM UNITS')
 s_text('Revenue: units x price, plus upsell, plus installation passed through to the installer at cost, plus service contracts on the installed base.',
-       'Cost of sales: BOM at the volume tier reached, outdoor unit, shipping, upsell cost, installation, service parts, 10% commission on channel sales.',
-       'Headcount: each team is sized by what creates its work (units, installed base, partners signed, marketing spend, production lines).',
-       'R&D hires and the back office are typed per year. Field service engineers are on payroll at one per 750 units on a service contract.')
+       'Cost of sales: BOM at the tier reached by this year plus next year\'s units, outdoor unit, shipping, upsell cost, installation, service parts, 10% commission on channel sales.',
+       'The BOM is charged in full on every unit whether the partner or an own line builds it. The lines add capacity, operators and facility cost, not a cost saving.',
+       'Headcount: each team is sized by what creates its work (units, installed base, partners signed, marketing spend, production lines). R&D and the back office are typed per year.')
 s_gap()
 s_bar('RESULTS, CASE SHOWN')
 _r[0] += 1; hr = _r[0]
@@ -1291,42 +1293,92 @@ _r[0] += 1; r = _r[0]
 SM.cell(r, 2, 'Months of operating cost that covers').font = f()
 SM.cell(r, 3, '=Dashboard!D53').number_format = NUM1; SM.cell(r, 3).font = f(); SM.cell(r, 3).alignment = R
 _r[0] += 1; r = _r[0]
+SM.cell(r, 2, 'Share of the raise the plan uses').font = f()
+SM.cell(r, 3, '=Dashboard!D52').number_format = PCT1; SM.cell(r, 3).font = f(); SM.cell(r, 3).alignment = R
+_r[0] += 1; r = _r[0]
 SM.cell(r, 2, 'Lowest cash before the raise').font = f()
 SM.cell(r, 3, '=Dashboard!D39').number_format = EUR; SM.cell(r, 3).font = f(); SM.cell(r, 3).alignment = R
 s_gap()
 s_bar('BOTH CASES SIDE BY SIDE  (typed on 7 September 2026; the table above is live)')
-s_text('Base, EUR3m: 310 units in 2027, 1,200 in 2028, 3,900 in 2029, 7,200 in 2030 (EUR124m revenue). EBITDA positive from 2028 (EUR1m, then 17m, then 34m). Cash low EUR0.9m in December 2027, about four months of cost.',
-       'Aggressive, EUR10m: 2,800 / 6,900 / 11,700 / 18,800 units, EUR321m revenue in 2030, EBITDA positive from 2027 (EUR5m, then 23m, 45m, 80m), 289 people. EUR9m of capex in Nov 2026 and Jan 2027 for two automated lines; cash low EUR1.0m in January 2027, 90% of the raise used.',
-       'Both depend on the supplier pricing the BOM on two-year volume. In base, 2028 plus 2029 volume is 5,100 units, just over the 5,000 tier; 100 units fewer and 2028 costs EUR2,900 more per unit.',
-       'The BOM tier is the whole story: the year the two-year volume crosses 5,000 and then 10,000, gross margin steps from under 10% to 25% and then 37%.')
+s_text('Base, EUR3m: 310 / 1,200 / 3,900 / 7,200 units in 2027 to 2030, EUR123m revenue in 2030. Gross margin 10%, 25%, 37%, 37%. EBITDA -2.1m, +1.0m, +17m, +34m. 85 people.',
+       '     Cash low EUR0.9m in December 2027, about four months of cost; 69% of the raise used.',
+       'Aggressive, EUR10m: 2,800 / 6,900 / 11,700 / 18,800 units, EUR321m revenue in 2030. Gross margin 28%, 38%, 37%, 37%. EBITDA +4.8m, +23m, +45m, +80m. 289 people.',
+       '     EUR9m of capex in Nov 2026 and Jan 2027 for two automated lines. Cash low EUR1.0m in January 2027, six weeks of cost; 90% of the raise used.',
+       'Gross margin steps from about 10% to 25% the year two-year volume passes 5,000 units, and to 37% past 10,000. Base: 2028 and 2029. Aggressive: 2027 and 2028.')
 s_gap()
-s_bar('ASSUMPTIONS TO BE CAREFUL WITH')
-s_text('1. BOM cost-down from EUR9,984 to EUR4,998 (50%). Learning-curve evidence supports about 30%. No supplier quote yet. Everything rests on this.',
-       '2. The BOM is priced on two-year volume. That needs a volume commitment to the supplier; if the supplier only prices on the current year, both cases lose a year of margin.',
-       '3. Until two-year volume passes 5,000, a turbineketel sells for less than it costs to build. Gross margin is under 10% until then.',
-       '4. Service contract attach rate 88%. Market data says 76% of new buyers take a contract.',
-       '5. Sales rep quota of 20 units a month. HVAC and solar benchmarks are 6 to 10. Matters while direct is the main channel (2027-28).',
-       '6. 20% lead-to-order at EUR600 of marketing per customer. The client\'s current number, above most published benchmarks.',
-       '7. No warranty reserve beyond the 3% inside the BOM. Peers carry 1.5 to 3.5% of revenue.',
-       '8. Direct share falling to 30% by 2030 needs about 145 active installer partners in 2029, all signed, trained and selling.')
+s_bar('DOES IT MAKE SENSE')
+s_text('Mechanically, yes. Both cases pass the full audit: no formula errors, balance sheet ties every month, funding received equals the inputs, 116 rows agree with an independent re-implementation.',
+       'Commercially it holds on one condition: the supplier prices the BOM on two-year volume. Without that, 2027 and 2028 are priced at EUR9,984 a unit and base does not close on EUR3m.',
+       'Soft spot 1. Base turns on about 100 units: 2028 plus 2029 volume is 5,100 against a 5,000 tier. At 4,900, 2028 costs EUR2,900 more per unit and EBITDA goes back to about -2.7m.',
+       'Soft spot 2. Aggressive spends EUR9m on lines that, as modelled, save nothing. The answer to "why build" has to be strategic, or a partner fee the client has not given us.',
+       'Soft spot 3. Aggressive is profitable in its first selling year because two-year volume puts 2027 straight into the second tier. An investor will want the supplier contract before believing it.')
+s_gap()
+s_bar('ASSUMPTIONS CHECKED AGAINST THE MARKET  (research of 4 September 2026, sources in docs/tarnoc-assumptions-research-2026-09-04.md)')
+_r[0] += 1; hr = _r[0]
+for c, t in ((2, 'Assumption'), (3, 'In the model'), (4, 'Verdict'), (5, 'What the market evidence says')):
+    x = SM.cell(hr, c, t); x.font = f(bold=True, color=WHITE); x.fill = fill(FILL_BLACK); x.alignment = L
+for c in (6, 7):
+    SM.cell(hr, c).fill = fill(FILL_BLACK)
+RESEARCH = [
+ ('Cost per marketing lead', 'EUR120', 'supported', 'Exclusive heat-pump leads EUR130-280 NL/BE, EUR50-350 DE; EUR90-180 is the range'),
+ ('Lead to order (50% qualified x 40% won)', '20%, EUR600 per order', 'high', 'Published 8-15% and EUR900-1,800 per order; the client\'s current number; stronger for a product priced below installed heat pumps'),
+ ('Installer commission', '10% of unit price', 'supported as a fee', 'Loyalty and referral schemes pay 4-10%; installers who buy and resell expect 20-30% trade margin'),
+ ('Units a partner can sell per month', '8', 'supported', 'Certification norm about 80 installs a year per monteur; fits a mid-sized firm with one dedicated monteur'),
+ ('Orders a partner brings in per month', '1, 2, 3, 4 (2027-30)', 'top of range', 'Evidence: 0.5-1 in year one, 2-3 by year four; 4 only for top partners'),
+ ('Partners per partner manager', '18', 'low vs incumbents', 'Remeha and Nefit account managers cover hundreds of firms; 15-25 is fine while onboarding, 40-80 at steady state'),
+ ('Partners trained per trainer per year; cost', '40; EUR3,500', 'throughput low, cost fine', '40-80 a year; EUR1,500-2,500 plus a rotating demo pool'),
+ ('Rep quota', '20 closes a month', 'high', 'US HVAC comfort advisors 8-10 a month, top decile 11-17; solar reps 2-3 in year one'),
+ ('Direct share path', '80 / 50 / 35 / 30%', 'no precedent', 'Brands are installer-led from day one or stay mostly direct; those that shift still hold 40-60% direct in year four'),
+ ('Marketing spend as share of revenue', 'about 2-4%', 'low', 'HVAC 6% (10-15% in growth), NIBE selling costs 14.6%; 6-10% early and 3-5% later is typical'),
+ ('Marketing team', '2 + 1 per EUR3m spend', 'low', 'Cross-industry: 1 marketer per EUR1-1.5m of media, or a 10-12% agency line'),
+ ('Aggressive volume 2030', '18,800 units', 'ambitious', 'NL sells about 43k hybrids and 425k boilers a year; Quatt reached about 12k a year in year four; Octopus 18k in the UK by year three'),
+ ('Units one field engineer looks after', '750', 'supported', '600-900 at 4.5-5.5 visits a day including breakdowns'),
+ ('Service contract attach rate', '88% (client)', 'high', '76% of new-boiler buyers hold a contract (Panteia/ACM 2025); 65-80% is the range'),
+ ('Turbineketel service price', 'EUR60 / 90 a year (client)', 'low', 'Dutch basic tiers EUR96-132 incl. VAT, comfort EUR156-290; EUR75-95 / 130-190 ex VAT'),
+ ('Combi+ service price', 'EUR150 / 200 a year (client)', 'supported', 'Market EUR140-363 incl. VAT'),
+ ('Service contract direct cost', 'EUR30-40 / 75-100 (client)', 'supported', 'Low for a parts-inclusive premium tier in years one to three'),
+ ('Support staffing', '1 per 2,500 installed; escalation 1 per 15,000', 'supported at maturity', 'Light for 2027-29; 1 per 1,500-2,000 early'),
+ ('Warranty reserve', 'none beyond 3% in the BOM', 'low', 'Ariston accrues 1.4-1.6% of revenue with a 3.6% provision, Daikin 2.4%; 2.5-4% on early cohorts'),
+ ('In-house line', '1,000 a month; EUR3m + EUR3m tooling; 12 months lead', 'supported', 'EUR250 per unit of annual capacity vs peers EUR250-600; 12-month lead time matches announcements'),
+ ('Operators per line; facility', '25; EUR90k a month', 'operators fine, facility high', 'Intergas and Remeha run 1.2-1.9 hours a unit; facility EUR40-75k a month'),
+ ('Assembly partner capacity', '650 / 1,000 a month', 'supported as a line rate', 'Partners commit capacity with take-or-pay, not output; a 6-12 month ramp is normal'),
+ ('BOM cost-down', 'EUR9,984 to 4,998, 50% (client)', 'high', 'Learning rates 3-17% per doubling; the 5k to 10k step alone is 29% for one doubling; tier 3 at EUR5,800-6,800 is what the evidence supports'),
+ ('Supply chain and order desk staffing', '1 per 900 units; 1 per 3,000', 'fits start-up scale', 'Core of 3-4 then 1 per 1,500-2,500 units'),
+ ('Working capital days', 'DSO 20, DPO 45, no inventory (client)', 'DSO low, no inventory unprecedented', 'Peers DSO 45-72, DIO 92-131; kept at the client\'s figures on instruction'),
+ ('Depreciation', '8 years', 'supported for the line', 'Tooling 3-5 years would be more usual'),
+ ('Inbound shipping per outdoor unit', 'EUR100 (client)', 'conservative', 'EUR40-60 in a full container, EUR80-120 groupage'),
+ ('Loaded cost per month by role', 'EUR4,800 to 8,000', 'right in total', 'Sales rep and support a little high, leadership low for executives; blend near the CBS average'),
+ ('Wage growth; other cost inflation', '5%; 10% a year', 'wages fine, costs high', 'CPB wages 3.2-4.2%; CPI 2.1-3%; other costs left at 10% on instruction'),
+ ('Office, IT, travel per head; recruitment', 'EUR700 / 250 / 300; EUR8,000', 'supported', 'NFC Index EUR760 per FTE; recruitment average EUR4,494, agency 15-25% of salary'),
+ ('R&D team, aggressive', '10 then 16 a year, 58 by 2030', 'supported', '60-90 at EUR300m revenue is typical, or an explicit outsourced engineering line'),
+ ('Back office', '3 to 8 people', 'fine for base, low for aggressive', 'For 289 staff, 14-22; HR alone needs 4-6'),
+ ('Revenue per head, aggressive', 'EUR1.1m', 'high', 'Incumbents EUR175-333k; outsourced assembly and pass-through installation justify EUR400-700k'),
+]
+for a, mv, verdict, ev in RESEARCH:
+    _r[0] += 1; r = _r[0]
+    SM.cell(r, 2, a).font = f(); SM.cell(r, 2).alignment = L
+    SM.cell(r, 3, mv).font = f(); SM.cell(r, 3).alignment = L
+    v = SM.cell(r, 4, verdict); v.font = f(bold=True); v.alignment = L
+    e = SM.cell(r, 5, ev); e.font = f(color=GREY, size=9, name=NOTE_FONT); e.alignment = L
+s_gap()
+s_text('The research briefs described the product as a gas boiler; it is a turbine heat pump. That weakens the "high" verdicts on the close rate and price, and does not affect the rest.')
 s_gap()
 s_bar('WHERE THE PLAN IS VULNERABLE')
-s_text('Base on EUR3m holds about EUR0.9m at its low point (December 2027), four months of cost. It works, but 2028 profit depends on two-year volume clearing 5,000 units by a margin of about 100.',
-       'Both cases lose money per unit until the second BOM tier. Reach it a year late and base runs out of cash; aggressive loses about EUR15m of EBITDA.',
-       'Aggressive spends EUR9m on two lines before selling a unit, hires about 75 people in 2027 and signs 36 installers that year. Cash cover at the low point is six weeks. That risk is not in the numbers.',
-       'In-house lines add capacity and cost (operators, facility, capex) but the BOM is the same whether the partner or our line builds the unit, so the model gives the lines no cost advantage.',
-       'Prices are the client\'s and unchanged. A forced price cut makes the tier-1 margin worse.',
+s_text('Base: the 5,000-unit cliff in 2028. A one-quarter delay in the 2029 ramp is enough to miss it, and with it the year\'s margin step.',
+       'Aggressive: six weeks of cash cover in January 2027 after EUR9m of capex, with the first unit sold that month. 90% use of the raise and 2-3 months of cover cannot both hold at EUR10m.',
+       'Both: the turbineketel sells below its tier-1 BOM. A forced price cut makes the first tier worse.',
+       'Aggressive headcount: 16 to 89 people in 2027 and 36 installers signed the same year. That risk is not in the numbers.',
        'Turbineketel service prices (EUR60 and EUR90 a year) are below the Dutch market. Upside if raised.')
 s_gap()
 s_bar('STILL NEEDED FROM THE CLIENT')
-s_text('Supplier quotes behind the three BOM tiers, and whether the supplier will price on a two-year volume commitment.',
-       'Confirmation of the installer deal: 10% of the unit price on top of the installation fee.',
+s_text('Supplier quotes behind the three BOM tiers, and confirmation the supplier will price on a two-year volume commitment.',
        'What the assembly partner charges per unit and whether it is inside the BOM tiers, so building in-house can be given its real saving.',
-       'A view on the direct-to-installer shift (80% direct in 2027, 50% in 2028, 30% by 2030) and on the size of the base raise.')
-s_text('')
-_r[0] += 1
-SM.cell(_r[0], 2, 'Detail: How to read me for the colour code and switches, Dashboard for the year view, Assumptions for every input.').font = f(italic=True, color=GREY, size=9, name=NOTE_FONT)
+       'Confirmation of the installer deal: 10% of the unit price on top of the installation fee.',
+       'A view on the direct-to-installer shift (80 / 50 / 35 / 30% direct) and on 18,800 units by 2030 for the aggressive case.')
+_r[0] += 2
+SM.cell(_r[0], 2, 'Detail: How to read me for the colour code, Dashboard for the year view, Assumptions for every input, docs/ in the repository for the research and the formula reviews.').font = f(italic=True, color=GREY, size=9, name=NOTE_FONT)
 SM.sheet_view.zoomScale = 110
+SM.freeze_panes = 'A4'
 
 # ---- checks that shout: red when cash is negative or a check row is not nil -------
 from openpyxl.formatting.rule import CellIsRule, FormulaRule
@@ -1340,8 +1392,8 @@ for chk_row in (58, 59):
 DB.conditional_formatting.add('D37:D39', CellIsRule(operator='lessThan', formula=['0'], font=RED_FONT))
 DB.conditional_formatting.add('D48', FormulaRule(formula=['ABS(D48)>0.01'], font=RED_FONT, fill=RED_FILL))
 DB.conditional_formatting.add('D53', CellIsRule(operator='lessThan', formula=['0'], font=RED_FONT))
-SM.conditional_formatting.add(f'C{SM_LOW_ROW}:C{SM_LOW_ROW+2}', CellIsRule(operator='lessThan', formula=['0'], font=RED_FONT))
-SM.conditional_formatting.add(f'C{SM_LOW_ROW-6}:G{SM_LOW_ROW-1}', CellIsRule(operator='lessThan', formula=['0'], font=RED_FONT))
+SM.conditional_formatting.add(f'C{SM_LOW_ROW}:C{SM_LOW_ROW+3}', CellIsRule(operator='lessThan', formula=['0'], font=RED_FONT))
+SM.conditional_formatting.add(f'C{SM_LOW_ROW-7}:G{SM_LOW_ROW-2}', CellIsRule(operator='lessThan', formula=['0'], font=RED_FONT))
 AS.freeze_panes = 'D4'
 DB.freeze_panes = 'D4'
 
