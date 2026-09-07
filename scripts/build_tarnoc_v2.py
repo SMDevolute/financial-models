@@ -445,7 +445,7 @@ a_single('ptr_per_pm', 'Partners per partner manager', 'partners', 18, 18)
 print(f'assumptions: upsell through selling, rows 4..{_ar-1}')
 
 # ---- build capacity and capex ---------------------------------------------
-a_bar('BUILD CAPACITY AND CAPEX  (assembly partner first, in-house takes over)')
+a_bar('BUILD CAPACITY AND CAPEX  (assembly partner in both cases; in-house lines and capex in the aggressive case only)')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
 a_single('partner_cap', 'Assembly partner capacity', 'units/month', 650, 1000,
          note='what the partner has contracted to build for us')
@@ -455,19 +455,21 @@ a_single('line1', 'In-house line 1 producing from', 'date',
 a_single('line2', 'In-house line 2 producing from', 'date',
          dt.datetime(2035, 1, 1), dt.datetime(2028, 1, 1), DATE_FMT,
          'aggressive: paid for in January 2027, so both lines run from early 2028 and most volume is built in-house')
-a_single('line_cap', 'Capacity per in-house line', 'units/month', 1000, 1000)
+a_single('line_cap', 'Capacity per in-house line', 'units/month', 1000, 1000,
+         note='aggressive only: the base case has no in-house line, so rows 83 to 89 do nothing in base')
 a_single('line_capex', 'Capex per in-house line', 'EUR', 3000000, 3000000, EUR,
-         note='EUR250 per unit of annual capacity; peers run EUR250 to 600')
+         note='aggressive only. EUR250 per unit of annual capacity; peers run EUR250 to 600')
 a_single('tool_capex', 'Tooling and automation, one-off with line 1', 'EUR',
          3000000, 3000000, EUR,
-         note='automated test, balancing and handling, which is why a line runs on 25 operators rather than 35')
+         note='aggressive only. Automated test, balancing and handling, which is why a line runs on 25 operators rather than 35')
 a_single('lead_m', 'Months from paying for a line to it producing', 'months', 12, 12,
          note='this lag is why the raise has to land before the volume does')
 a_single('ops_per_line', 'Production operators per live line', 'FTE', 25, 25,
          note='assembly, balancing, leak test, run-in and electrical test, with the automation above; Intergas and Remeha run leaner still')
 a_single('line_run', 'Facility and maintenance per live line', 'EUR/month',
-         90000, 90000, EUR, 'the building and the machines, not the people')
-a_single('dep_life', 'Depreciation life, straight line', 'years', 8, 8)
+         90000, 90000, EUR, 'aggressive only: the building and the machines, not the people')
+a_single('dep_life', 'Depreciation life, straight line', 'years', 8, 8,
+         note='aggressive only: the base case has no fixed assets')
 
 # ---- bill of materials ----------------------------------------------------
 a_bar('BILL OF MATERIALS  (unit cost falls as volume crosses each tier)')
@@ -495,7 +497,8 @@ a_single('ib_per_sup', 'Installed units per support agent', 'units', 2500, 2500,
 a_single('ib_per_esc', 'Installed units per technical escalation FTE', 'units', 15000, 15000)
 a_single('ptr_per_tr', 'New partners per year per installer trainer', 'partners', 40, 40)
 a_single('u_per_desk', 'Units per order desk FTE', 'units/yr', 3000, 3000)
-a_single('mkt_per_fte', 'Marketing spend per marketer', 'EUR/yr', 3000000, 3000000, EUR)
+a_single('mkt_per_fte', 'Yearly marketing budget one marketer can run', 'EUR/yr', 1500000, 1500000, EUR,
+         note='sizes the marketing team only: the floor above plus one more person for every EUR1.5m of yearly spend. Not a spend. Benchmarks: one marketer per EUR1-1.5m of media')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
 a_single('visits_tech', 'Installed units one field engineer can look after', 'units', 600, 600,
          note='sizes the field service team: units on a service contract divided by this number = engineers to hire. Each unit gets one visit a year plus breakdown cover; market range 600 to 900')
