@@ -1194,10 +1194,115 @@ cv(15, 'Units', 9, color=GREY); CV.cell(15, 3, 'Whole euros').font = Font(name=F
 cv(18, 'Read the How to read me tab first.', 9, color=GREY)
 cv(21, 'STRICTLY CONFIDENTIAL', 10, True, RED)
 
+# ===========================================================================
+# SUMMARY  (front page: what the model is, what it says, where it is weak)
+# ===========================================================================
+SM = wb.create_sheet('Summary')
+SM.sheet_view.showGridLines = False
+SM.column_dimensions['A'].width = 3
+SM.column_dimensions['B'].width = 44
+for cl in 'CDEFG':
+    SM.column_dimensions[cl].width = 14
+SM['B1'] = 'Tarnoc B.V.  Summary'
+for cl in 'BCDEFG':
+    SM[f'{cl}1'].fill = fill(FILL_BLACK)
+SM['B1'].font = f(bold=True, color=WHITE)
+SM['B2'] = 'Written 7 September 2026. The results table is live and follows the two switches on Assumptions; the text is not.'
+SM['B2'].font = f(italic=True, color=GREY, size=9, name=NOTE_FONT)
+SM['D2'] = 'Case shown:'; SM['D2'].font = f(bold=True); SM['D2'].alignment = R
+SM['E2'] = '=IF(Assumptions!$E$5=2,"Aggressive, EUR10m raise","Base, EUR3m raise")'
+SM['E2'].font = f(bold=True)
+SM['D3'] = 'BOM priced on:'; SM['D3'].font = f(bold=True); SM['D3'].alignment = R
+SM['E3'] = '=IF(Assumptions!$E$6=2,"this year plus next year\'s volume","this year\'s volume")'
+SM['E3'].font = f(bold=True)
+
+_r = [4]
+def s_bar(text):
+    _r[0] += 1; r = _r[0]
+    SM.cell(r, 2, text).font = f(bold=True, color=WHITE)
+    for c in range(2, 8):
+        SM.cell(r, c).fill = fill(FILL_BLACK)
+def s_text(*lines):
+    for t in lines:
+        _r[0] += 1
+        c = SM.cell(_r[0], 2, t); c.font = f(); c.alignment = L
+def s_gap():
+    _r[0] += 1
+
+s_bar('WHAT THIS IS')
+s_text('A monthly model of Tarnoc from January 2026 to December 2030. Every figure is calculated from the Assumptions tab.',
+       'The only typed numbers are the assumptions, the committed 2026 plan (OPEX rows 38 to 43) and the back-office headcount (Personnel row 17).',
+       'Two cases on one switch (Assumptions E5): base with a EUR3m raise, aggressive with EUR10m. A second switch (E6) sets the BOM price basis.',
+       'Prices, BOM tiers, service and upsell tables, shipping, the 2026 plan, the raise amounts and working-capital days are the client\'s own figures.')
+s_gap()
+s_bar('HOW UNITS SOLD ARE CALCULATED')
+s_text('Units sold in a month is the lowest of three numbers:',
+       '1. Demand: marketing spend / cost per lead x lead-to-qualified x qualified-to-won, plus orders the installer partners bring in themselves.',
+       '2. Selling capacity: own reps x quota for the direct share of sales, installer partners x units each for the rest. Direct share falls year by year.',
+       '3. Build capacity: the assembly partner\'s contracted volume, plus 1,000 a month per in-house line once it produces (aggressive case only).')
+s_gap()
+s_bar('WHAT FOLLOWS FROM UNITS')
+s_text('Revenue: units x price, plus upsell, plus installation passed through to the installer at cost, plus service contracts on the installed base.',
+       'Cost of sales: BOM at the volume tier reached, outdoor unit, shipping, upsell cost, installation, service parts, 10% commission on channel sales.',
+       'Headcount: each team is sized by what creates its work (units, installed base, partners signed, marketing spend, production lines).',
+       'R&D hires and the back office are typed per year. Field service engineers are on payroll at one per 750 units on a service contract.')
+s_gap()
+s_bar('RESULTS, CASE SHOWN')
+_r[0] += 1; hr = _r[0]
+for k, y in enumerate(YEARS):
+    c = SM.cell(hr, 3 + k, y); c.font = f(bold=True, color=WHITE); c.fill = fill(FILL_BLACK); c.alignment = R
+SM.cell(hr, 2).fill = fill(FILL_BLACK)
+for lbl, drow, fmt in (('Units sold', 6, NUM), ('Revenue', 14, EUR), ('Gross margin', 16, PCT1),
+                       ('EBITDA', 18, EUR), ('Total headcount at year end', 24, NUM1), ('Cash at year end', 31, EUR)):
+    _r[0] += 1; r = _r[0]
+    SM.cell(r, 2, lbl).font = f(bold=lbl in ('EBITDA', 'Cash at year end'))
+    for k, y in enumerate(YEARS):
+        c = SM.cell(r, 3 + k, f'=Dashboard!{DCOL[y]}{drow}'); c.number_format = fmt; c.alignment = R
+        c.font = f(bold=lbl in ('EBITDA', 'Cash at year end'))
+_r[0] += 1; r = _r[0]
+SM.cell(r, 2, 'Lowest cash after the raise, and when').font = f(bold=True)
+SM.cell(r, 3, '=Dashboard!D37').number_format = EUR; SM.cell(r, 3).font = f(bold=True); SM.cell(r, 3).alignment = R
+SM.cell(r, 4, '=Dashboard!D38').number_format = DATE_FMT; SM.cell(r, 4).alignment = R
+_r[0] += 1; r = _r[0]
+SM.cell(r, 2, 'Months of operating cost that covers').font = f()
+SM.cell(r, 3, '=Dashboard!D53').number_format = NUM1; SM.cell(r, 3).alignment = R
+s_gap()
+s_bar('BOTH CASES SIDE BY SIDE  (typed on 7 September 2026; the table above is live)')
+s_text('Base, EUR3m: 7,400 units and EUR126m revenue in 2030, EBITDA negative until 2030 (EUR18m), 87 people, cash low of -EUR0.25m in December 2029.',
+       'Aggressive, EUR10m: 15,100 units and EUR259m revenue in 2030, EBITDA positive from 2028 (EUR62m in 2030), 256 people, cash low EUR4.9m in December 2027.',
+       'With the BOM priced on two-year volume, base EBITDA turns positive in 2028 and its cash low rises to about EUR1.4m.',
+       'Spending 50% more on marketing in 2028-29 takes base volume past 5,000 units in 2029 and swings that year\'s EBITDA from -2.9m to +12.7m.')
+s_gap()
+s_bar('ASSUMPTIONS TO BE CAREFUL WITH')
+s_text('1. BOM cost-down from EUR9,984 to EUR4,998 (50%). Learning-curve evidence supports about 30%. No supplier quote yet. Everything rests on this.',
+       '2. Until volume passes 5,000 a year, a turbineketel sells for less than it costs to build. Gross margin is under 10% until then.',
+       '3. Service contract attach rate 88%. Market data says 76% of new buyers take a contract.',
+       '4. Sales rep quota of 20 units a month. HVAC and solar benchmarks are 6 to 10. Matters while direct is the main channel (2027-28).',
+       '5. 20% lead-to-order at EUR600 of marketing per customer. The client\'s current number, above most published benchmarks.',
+       '6. No warranty reserve beyond the 3% inside the BOM. Peers carry 1.5 to 3.5% of revenue.',
+       '7. Direct share falling to 30% by 2030 needs about 145 active installer partners in 2029, all signed, trained and selling.')
+s_gap()
+s_bar('WHERE THE PLAN IS VULNERABLE')
+s_text('Base on EUR3m runs out of cash at the end of 2029. It needs a bigger raise, the two-year BOM pricing, or the extra marketing push above.',
+       'Both cases lose money per unit until the second BOM tier. Reach it a year late and base runs out of cash; aggressive loses about EUR15m of EBITDA.',
+       'Aggressive needs about 60 hires in 2027, a production line and 25 installers signed in the same year. That risk is not in the numbers.',
+       'Prices are the client\'s and unchanged. A forced price cut makes the tier-1 margin worse.',
+       'Turbineketel service prices (EUR60 and EUR90 a year) are below the Dutch market. Upside if raised.')
+s_gap()
+s_bar('STILL NEEDED FROM THE CLIENT')
+s_text('Supplier quotes behind the three BOM tiers, and whether the supplier will price on a two-year volume commitment.',
+       'Confirmation of the installer deal: 10% of the unit price on top of the installation fee.',
+       'A view on the direct-to-installer shift (80% direct in 2027, 50% in 2028, 30% by 2030) and on the size of the base raise.')
+s_text('')
+_r[0] += 1
+SM.cell(_r[0], 2, 'Detail: How to read me for the colour code and switches, Dashboard for the year view, Assumptions for every input.').font = f(italic=True, color=GREY, size=9, name=NOTE_FONT)
+SM.sheet_view.zoomScale = 110
+
 # ---- tab order, matching the house layout ---------------------------------
-order = ['Cover', 'How to read me', 'Assumptions', 'Financial Statements',
+order = ['Summary', 'Cover', 'How to read me', 'Assumptions', 'Financial Statements',
          'Revenue Forecast', 'COGS', 'OPEX', 'Personnel', 'Dashboard']
 wb._sheets = [wb[t] for t in order]
+wb.active = 0
 
 os.makedirs(os.path.dirname(OUT) or '.', exist_ok=True)
 wb.save(OUT)
