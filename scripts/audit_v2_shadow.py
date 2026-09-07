@@ -82,7 +82,6 @@ tiers = []
 for lb in ('Tier 1', 'Tier 2', 'Tier 3'):
     r = LBL[lb]
     tiers.append((n(AS.cell(r, 4).value), n(AS.cell(r, 5).value), n(AS.cell(r, 6).value)))
-tier_basis = n(AS.cell(LBL['BOM tier basis   1 = this year only,  2 = this year plus next'], 5).value)
 u_sc = n(live('Units per supply chain and logistics FTE'))
 ib_sup = n(live('Installed units per support agent'))
 ib_esc = n(live('Installed units per technical escalation FTE'))
@@ -191,7 +190,7 @@ for i in range(NM):
     S['r_tot'][i] = sum(S[k][i] for k in ('r_ttk','r_cmb','r_ups','r_ins','r_svc','r_grant'))
     S['uy'][i] = ANN.get(y, 0.0)
     S['uny'][i] = ANN.get(y+1, S['uy'][i])
-    S['tkey'][i] = S['uy'][i] + S['uny'][i] if tier_basis == 2 else S['uy'][i]
+    S['tkey'][i] = S['uy'][i] + S['uny'][i]          # two-year volume sets the BOM tier
     S['c_ttk_u'][i] = vlook(S['tkey'][i], 1)
     S['c_odu_u'][i] = vlook(S['tkey'][i], 2)
     S['c_ttk'][i] = S['ttk_u'][i]*S['c_ttk_u'][i]

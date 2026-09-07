@@ -6,7 +6,7 @@ audit_v2.py -- full correctness audit of the Tarnoc v2 model.
 Four phases, run against a real LibreOffice recalculation, not against openpyxl's
 view of the formulas:
 
-  1. Recalculate every combination of the two switches and look for formula
+  1. Recalculate both cases and look for formula
      errors and a balance sheet that does not tie.
   2. Compare the workbook against an independent Python reimplementation of the
      whole model, cell by cell. Any disagreement is a bug in one of them.
@@ -23,7 +23,7 @@ import openpyxl
 SOFFICE = '/Applications/LibreOffice.app/Contents/MacOS/soffice'
 HERE = os.path.dirname(os.path.abspath(__file__))
 ERRS = ('#REF!', '#VALUE!', '#DIV/0!', '#NAME?', '#N/A', '#NULL!', '#NUM!', 'Err:')
-CASE_CELL, TIER_CELL, CHECK_ROWS = 'E5', 'E6', (58, 59)
+CASE_CELL, CHECK_ROWS = 'E5', (58, 59)
 
 
 def recalc(path, outdir):
@@ -33,19 +33,18 @@ def recalc(path, outdir):
     return os.path.join(outdir, os.path.basename(path))
 
 
-def variant(src, tmp, case, tier):
+def variant(src, tmp, case):
     wb = openpyxl.load_workbook(src)
     wb['Assumptions'][CASE_CELL] = case
-    wb['Assumptions'][TIER_CELL] = tier
-    p = os.path.join(tmp, f'v_{case}{tier}.xlsx')
+    p = os.path.join(tmp, f'v_{case}.xlsx')
     wb.save(p)
-    return recalc(p, os.path.join(tmp, f'o{case}{tier}'))
+    return recalc(p, os.path.join(tmp, f'o{case}'))
 
 
 def phase1(recalced):
     print('PHASE 1  formula errors and the balance sheet check')
     ok = True
-    for (case, tier), path in sorted(recalced.items()):
+    for case, path in sorted(recalced.items()):
         v = openpyxl.load_workbook(path, data_only=True)
         errs = [f'{ws.title}!{c.coordinate}={c.value}' for ws in v for row in ws.iter_rows()
                 for c in row if isinstance(c.value, str) and any(e in c.value for e in ERRS)]
@@ -54,7 +53,7 @@ def phase1(recalced):
         worst = max((abs(x) for x in chk if isinstance(x, (int, float))), default=0.0)
         good = not errs and worst < 0.01
         ok &= good
-        print(f'  {"pass" if good else "FAIL"}  case {case}, tier basis {tier}: '
+        print(f'  {"pass" if good else "FAIL"}  case {case}: '
               f'{len(errs)} errors, worst balance check {worst:.4f}')
         for e in errs[:5]:
             print('        ', e)
@@ -74,15 +73,15 @@ def main():
     src = os.path.abspath(sys.argv[1])
     tmp = tempfile.mkdtemp(prefix='audit_v2_')
     try:
-        recalced = {(c, t): variant(src, tmp, c, t) for c in (1, 2) for t in (1, 2)}
+        recalced = {c: variant(src, tmp, c) for c in (1, 2)}
         ok = phase1(recalced)
         print('\nPHASE 2  independent shadow model, cell by cell')
         for case in (1, 2):
             print(f'  case {case}:')
-            ok &= run('audit_v2_shadow.py', [recalced[(case, 1)], str(case)])
+            ok &= run('audit_v2_shadow.py', [recalced[case], str(case)])
         print('\nPHASE 3  accounting identities, signs and operating logic')
-        ok &= run('audit_v2_identities.py', [recalced[(2, 1)]])
-        ok &= run('audit_v2_identities.py', [recalced[(1, 1)]])
+        ok &= run('audit_v2_identities.py', [recalced[2]])
+        ok &= run('audit_v2_identities.py', [recalced[1]])
         print('\nPHASE 4  structure')
         ok &= run('audit_v2_structure.py', [src])
         print('\n' + ('AUDIT PASSED' if ok else 'AUDIT FAILED'))

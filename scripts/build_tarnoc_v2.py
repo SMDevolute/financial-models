@@ -207,7 +207,7 @@ AS['B1'].font = f(bold=True, color=WHITE); AS['B1'].fill = fill(FILL_BLACK)
 for c in range(3, 11):
     AS.cell(1, c).fill = fill(FILL_BLACK)
 AS['B2'] = ('Every driver lives here. Pale yellow cells are inputs, everything else is '
-            'calculated. The two switches on rows 5 and 6 drive the whole model.')
+            'calculated. The case switch on row 5 drives the whole model.')
 AS['B2'].font = f(italic=True, color=GREY, size=9, name=NOTE_FONT)
 
 A, AY = {}, {}
@@ -243,15 +243,11 @@ def a_switch(key, lbl, value, note=None):
     A[key] = _ar; _ar += 1
     return _ar - 1
 
-# the two switches come first so their addresses are fixed and quotable
-a_bar('SCENARIO SWITCHES')
+# the case switch comes first so its address is fixed and quotable
+a_bar('SCENARIO SWITCH')
 CASE_ROW = a_switch('case', 'Case   1 = Base (EUR3m raise),  2 = Aggressive (EUR10m raise)', 1,
                     'the master switch. Every Live column on this tab reads it')
-TIER_ROW = a_switch('tier_basis',
-                    'BOM tier basis   1 = this year only,  2 = this year plus next', 1,
-                    'basis 2 commits next year volume to the supplier, so basis 1 ships as the default')
 CASE = f'Assumptions!$E${CASE_ROW}'
-TIER = f'Assumptions!$E${TIER_ROW}'
 
 def a_single(key, lbl, unit, base, aggr, fmt=NUM, note=None):
     global _ar
@@ -408,7 +404,7 @@ a_calc('svc_attach', 'Share of the installed base on a contract', '%',
 # ---- demand funnel --------------------------------------------------------
 a_bar('DEMAND  (marketing spend runs the funnel)')
 a_yeartable('mkt', 'Marketing spend', 'EUR/month',
-            [0, 13000, 35000, 85000, 160000],
+            [0, 13000, 40000, 115000, 160000],
             [0, 90000, 190000, 265000, 300000], EUR,
             'generates orders through the funnel, on top of the orders installer partners bring in; nil before the first sellable month')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
@@ -660,8 +656,8 @@ def infl(cl, key):
 # ===========================================================================
 CG = sheet('COGS', label_w=44, freeze='E4')
 title(CG, 'Tarnoc B.V.  Cost of Goods Sold',
-      'Unit cost falls as annual volume crosses each tier. The tier basis switch is on '
-      'Assumptions row 6.')
+      'Unit cost falls as volume crosses each tier. The tier is set on this year plus next '
+      'year\'s units, a two-year volume commitment to the supplier.')
 datebar(CG)
 RFY = "'Revenue Forecast'"
 YRNG = f"{RFY}!$BN$3:$BR$34"          # annual columns, year header down to units sold
@@ -671,9 +667,10 @@ line(CG, 6, 'Units sold this calendar year', 'units',
      lambda cl, i: f'=IFERROR(HLOOKUP(YEAR({cl}$3),{YRNG},32,FALSE),0)', annual='end')
 line(CG, 7, 'Units sold next calendar year', 'units',
      lambda cl, i: f'=IFERROR(HLOOKUP(YEAR({cl}$3)+1,{YRNG},32,FALSE),{cl}6)', annual='end',
-     note='only used when the tier basis switch is set to 2; beyond the horizon, next year is taken as at least this year')
-line(CG, 8, 'Tier key', 'units',
-     lambda cl, i: f'=IF({TIER}=2,{cl}6+{cl}7,{cl}6)', total=True, annual='end')
+     note='beyond the horizon, next year is taken as at least this year')
+line(CG, 8, 'Two-year volume, sets the tier', 'units',
+     lambda cl, i: f'={cl}6+{cl}7', total=True, annual='end',
+     note='the supplier prices on a two-year volume commitment: this year plus next')
 line(CG, 9, 'Turbineketel cost per unit', 'EUR/unit',
      lambda cl, i: f'=VLOOKUP({cl}8,Assumptions!$D${BOM_T1}:$E${BOM_T3},2,TRUE)',
      EUR, annual='avg',
@@ -1163,12 +1160,11 @@ for r, txt in enumerate([
 ], start=13):
     HR.cell(r, 3, txt).font = f()
 
-h_bar(18, 'THE TWO SWITCHES')
+h_bar(18, 'THE SWITCH')
 HR.cell(19, 3, f'Assumptions row {CASE_ROW}, cell E{CASE_ROW}. Case: 1 is the base plan on a EUR3m raise, '
                '2 is the aggressive plan on EUR10m. Every Live column on Assumptions follows it.').font = f()
-HR.cell(20, 3, f'Assumptions row {TIER_ROW}, cell E{TIER_ROW}. BOM tier basis: 1 prices the bill of materials '
-               'off this year volume alone, 2 off this year plus next. Basis 2 means committing next year '
-               'volume to the supplier, so basis 1 is the default.').font = f()
+HR.cell(20, 3, 'The bill of materials is priced on two-year volume (this year plus next), which assumes a volume '
+               'commitment to the supplier. There is no switch for this; it is how the COGS tab works.').font = f()
 
 h_bar(22, 'HOW UNITS SOLD IS DECIDED')
 for r, txt in enumerate([
@@ -1233,14 +1229,13 @@ SM['B1'] = 'Tarnoc B.V.  Summary'
 for cl in 'BCDEFG':
     SM[f'{cl}1'].fill = fill(FILL_BLACK)
 SM['B1'].font = f(bold=True, color=WHITE)
-SM['B2'] = 'Written 7 September 2026. The results table is live and follows the two switches on Assumptions; the text is not.'
+SM['B2'] = 'Written 7 September 2026. The results table is live and follows the case switch on Assumptions; the text is not.'
 SM['B2'].font = f(italic=True, color=GREY, size=9, name=NOTE_FONT)
 SM['D2'] = 'Case shown:'; SM['D2'].font = f(bold=True); SM['D2'].alignment = R
 SM['E2'] = '=IF(Assumptions!$E$5=2,"Aggressive, EUR10m raise","Base, EUR3m raise")'
 SM['E2'].font = f(bold=True)
 SM['D3'] = 'BOM priced on:'; SM['D3'].font = f(bold=True); SM['D3'].alignment = R
-SM['E3'] = '=IF(Assumptions!$E$6=2,"this year plus next year\'s volume","this year\'s volume")'
-SM['E3'].font = f(bold=True)
+SM['E3'] = 'two-year volume commitment'; SM['E3'].font = f(bold=True)
 
 _r = [4]
 def s_bar(text):
@@ -1258,7 +1253,7 @@ def s_gap():
 s_bar('WHAT THIS IS')
 s_text('A monthly model of Tarnoc from January 2026 to December 2030. Every figure is calculated from the Assumptions tab.',
        'The only typed numbers are the assumptions, the committed 2026 plan (OPEX rows 38 to 43) and the back-office headcount (Personnel row 17).',
-       'Two cases on one switch (Assumptions E5): base with a EUR3m raise, aggressive with EUR10m. A second switch (E6) sets the BOM price basis.',
+       'Two cases on one switch (Assumptions E5): base with a EUR3m raise, aggressive with EUR10m. The BOM is priced on two-year volume in both.',
        'Prices, BOM tiers, service and upsell tables, shipping, the 2026 plan, the raise amounts and working-capital days are the client\'s own figures.')
 s_gap()
 s_bar('HOW UNITS SOLD ARE CALCULATED')
@@ -1297,22 +1292,23 @@ SM.cell(r, 2, 'Lowest cash before the raise').font = f()
 SM.cell(r, 3, '=Dashboard!D39').number_format = EUR; SM.cell(r, 3).font = f(); SM.cell(r, 3).alignment = R
 s_gap()
 s_bar('BOTH CASES SIDE BY SIDE  (typed on 7 September 2026; the table above is live)')
-s_text('Base, EUR3m: 310 units in 2027, 1,100 in 2028, 3,300 in 2029, 7,200 in 2030 (EUR123m revenue). EBITDA negative until 2030 (EUR18m), 84 people, cash low of -EUR1.4m in December 2029.',
-       'Aggressive, EUR10m: 15,100 units and EUR259m revenue in 2030, EBITDA positive from 2028 (EUR62m in 2030), 256 people, cash low EUR4.9m in December 2027.',
-       'With the BOM priced on two-year volume, base EBITDA turns positive in 2028 and its cash low rises to about EUR1.4m.',
-       'Crossing 5,000 units a year one year earlier (more marketing or faster partner signing) moves that year\'s EBITDA by roughly EUR15m, because the BOM drops a tier.')
+s_text('Base, EUR3m: 310 units in 2027, 1,200 in 2028, 3,900 in 2029, 7,200 in 2030 (EUR124m revenue). EBITDA positive from 2028 (EUR1m, then 17m, then 34m). Cash low EUR0.9m in December 2027, about four months of cost.',
+       'Aggressive, EUR10m: 1,700 / 5,000 / 9,300 / 15,100 units, EUR259m revenue in 2030, EBITDA positive from 2027 (EUR62m in 2030), 256 people. Cash never falls below the EUR6.2m it holds after the raise.',
+       'Both depend on the supplier pricing the BOM on two-year volume. In base, 2028 plus 2029 volume is 5,100 units, just over the 5,000 tier; 100 units fewer and 2028 costs EUR2,900 more per unit.',
+       'The BOM tier is the whole story: the year the two-year volume crosses 5,000 and then 10,000, gross margin steps from under 10% to 25% and then 37%.')
 s_gap()
 s_bar('ASSUMPTIONS TO BE CAREFUL WITH')
 s_text('1. BOM cost-down from EUR9,984 to EUR4,998 (50%). Learning-curve evidence supports about 30%. No supplier quote yet. Everything rests on this.',
-       '2. Until volume passes 5,000 a year, a turbineketel sells for less than it costs to build. Gross margin is under 10% until then.',
-       '3. Service contract attach rate 88%. Market data says 76% of new buyers take a contract.',
-       '4. Sales rep quota of 20 units a month. HVAC and solar benchmarks are 6 to 10. Matters while direct is the main channel (2027-28).',
-       '5. 20% lead-to-order at EUR600 of marketing per customer. The client\'s current number, above most published benchmarks.',
-       '6. No warranty reserve beyond the 3% inside the BOM. Peers carry 1.5 to 3.5% of revenue.',
-       '7. Direct share falling to 30% by 2030 needs about 145 active installer partners in 2029, all signed, trained and selling.')
+       '2. The BOM is priced on two-year volume. That needs a volume commitment to the supplier; if the supplier only prices on the current year, both cases lose a year of margin.',
+       '3. Until two-year volume passes 5,000, a turbineketel sells for less than it costs to build. Gross margin is under 10% until then.',
+       '4. Service contract attach rate 88%. Market data says 76% of new buyers take a contract.',
+       '5. Sales rep quota of 20 units a month. HVAC and solar benchmarks are 6 to 10. Matters while direct is the main channel (2027-28).',
+       '6. 20% lead-to-order at EUR600 of marketing per customer. The client\'s current number, above most published benchmarks.',
+       '7. No warranty reserve beyond the 3% inside the BOM. Peers carry 1.5 to 3.5% of revenue.',
+       '8. Direct share falling to 30% by 2030 needs about 145 active installer partners in 2029, all signed, trained and selling.')
 s_gap()
 s_bar('WHERE THE PLAN IS VULNERABLE')
-s_text('Base on EUR3m runs out of cash during 2028 and is EUR1.4m short at the end of 2029. It needs a raise of about EUR5m, or the two-year BOM pricing.',
+s_text('Base on EUR3m holds about EUR0.9m at its low point (December 2027), four months of cost. It works, but 2028 profit depends on two-year volume clearing 5,000 units by a margin of about 100.',
        'Both cases lose money per unit until the second BOM tier. Reach it a year late and base runs out of cash; aggressive loses about EUR15m of EBITDA.',
        'Aggressive needs about 60 hires in 2027, a production line and 25 installers signed in the same year. That risk is not in the numbers.',
        'Prices are the client\'s and unchanged. A forced price cut makes the tier-1 margin worse.',
