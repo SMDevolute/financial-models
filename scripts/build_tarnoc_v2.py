@@ -330,6 +330,8 @@ a_bar('GENERAL')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
 a_single('open_cash', 'Opening cash at Jan-2026', 'EUR', 853120, 853120, EUR,
          'the actual balance carried into January 2026')
+a_single('base_year', 'Base year for salary and cost inflation', 'year', 2026, 2026, YEAR_FMT,
+         note='costs are quoted in this year\'s money and inflated from here')
 a_single('sal_infl', 'Annual salary increase', '%', 0.05, 0.05, PCT)
 a_single('tax', 'Corporate income tax rate', '%', 0.258, 0.258, PCT,
          'losses are carried forward until profits absorb them')
@@ -338,9 +340,6 @@ a_single('loan_rate', 'Interest on the convertible loan', '%', 0.05, 0.05, PCT)
 a_single('sell_from', 'First month we can sell', 'date',
          dt.datetime(2027, 1, 1), dt.datetime(2027, 1, 1), DATE_FMT,
          'nil units before this. Product, certification and supply have to be ready first')
-a_single('hire_from', 'Hiring starts from', 'date',
-         dt.datetime(2026, 11, 1), dt.datetime(2026, 11, 1), DATE_FMT,
-         'the month after the raise lands. Nothing changes in the committed 2026 plan before it')
 a_single('freeze_to', 'Committed 2026 plan holds until', 'date',
          dt.datetime(2026, 10, 1), dt.datetime(2026, 10, 1), DATE_FMT,
          'operating costs to this month are taken from the existing plan, not from the drivers')
@@ -402,7 +401,7 @@ a_calc('svc_rev', 'Service revenue per installed unit per year', 'EUR/unit',
 a_calc('svc_cost', 'Service cost per installed unit per year', 'EUR/unit',
        f'={LV("mix_ttk")}*SUMPRODUCT($D${s1}:$D${s2},$F${s1}:$F${s2})'
        f'+{LV("mix_combi")}*SUMPRODUCT($D${s3}:$D${s4},$F${s3}:$F${s4})', EUR,
-       'this is the field labour, so service engineers are not charged again in Personnel')
+       'parts, consumables and travel per contract; the field engineers themselves are salaried on the Personnel tab')
 a_calc('svc_attach', 'Share of the installed base on a contract', '%',
        f'=$D${s1}+$D${s2}', PCT)
 
@@ -411,7 +410,7 @@ a_bar('DEMAND  (marketing spend runs the funnel)')
 a_yeartable('mkt', 'Marketing spend', 'EUR/month',
             [0, 13000, 35000, 85000, 160000],
             [0, 90000, 190000, 265000, 300000], EUR,
-            'fills the demand the installer partners do not bring in themselves; spend more, generate more orders')
+            'generates orders through the funnel, on top of the orders installer partners bring in; nil before the first sellable month')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
 a_single('cpl', 'Cost per lead', 'EUR', 120, 120, EUR,
          'EUR120 a lead at a 20% close rate is EUR600 of marketing per customer')
@@ -487,8 +486,8 @@ a_yeartable('rnd_add', 'R&D engineers hired in the year', 'FTE',
             [0, 2, 2, 3, 4], [0, 5, 13, 14, 14], NUM,
             'a novel turbine machine plus the Twincycle needs engineers, not a fixed team')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
-a_single('rnd_start', 'R&D engineers carried into 2027', 'FTE', 10, 10,
-         note='the roster at the end of the committed 2026 plan')
+a_single('rnd_start', 'R&D engineers in post at Jan-2026', 'FTE', 10, 10,
+         note='the founding engineering team; their cost sits inside the committed 2026 plan until November 2026')
 a_single('mkt_base', 'Marketing team floor', 'FTE', 2, 2)
 a_single('u_per_sc', 'Units per supply chain and logistics FTE', 'units/yr', 900, 900,
          note='buying, planning, inbound quality and warehousing')
@@ -511,7 +510,7 @@ a_single('c_ops', 'Supply chain and production', 'EUR/month', 5000, 5000, EUR)
 a_single('c_sup', 'Support and escalation', 'EUR/month', 4800, 4800, EUR)
 a_single('c_ga', 'Leadership and back office', 'EUR/month', 7000, 7000, EUR)
 a_single('c_rnd', 'R&D engineer', 'EUR/month', 5700, 5700, EUR,
-         note='the blended cost of the seven engineers already in post')
+         note='the blended cost of the engineers already in post')
 a_single('c_tech', 'Field service engineer', 'EUR/month', 6500, 6500, EUR)
 
 a_bar('OVERHEADS AND OTHER OPERATING COSTS')
@@ -554,7 +553,8 @@ datebar(RF)
 LM = MC[-1]
 
 bar(RF, 5, 'DEMAND')
-line(RF, 6, 'Marketing spend', 'EUR/mo', lambda cl, i: '=' + YL('mkt', cl),
+line(RF, 6, 'Marketing spend', 'EUR/mo',
+     lambda cl, i: f'=IF({cl}$3<{LV("sell_from")},0,' + YL('mkt', cl) + ')',
      EUR, 'link', note='from the Assumptions year table, per the case switch')
 line(RF, 7, 'Installed base at start of month', 'units',
      lambda cl, i: '=0' if i == 0 else f'={MC[i-1]}41', annual='end')
@@ -638,7 +638,8 @@ line(RF, 48, 'Service contracts', 'EUR',
      lambda cl, i: f'={cl}7*{LV("svc_rev")}/12', EUR,
      note='charged on the installed base at the start of the month')
 line(RF, 49, 'Subsidies and grants', 'EUR',
-     lambda cl, i: f'=IF({cl}$3={LV("grant_d")},{LV("grant_a")},0)', EUR,
+     lambda cl, i: (f'=IF(AND(YEAR({cl}$3)=YEAR({LV("grant_d")}),MONTH({cl}$3)=MONTH({LV("grant_d")})),'
+                    f'{LV("grant_a")},0)'), EUR,
      note='the 2026 subsidy already in the committed plan')
 line(RF, 50, 'Total revenue', 'EUR', lambda cl, i: f'=SUM({cl}44:{cl}49)', EUR, grand=True)
 line(RF, 51, 'Revenue per unit', 'EUR/unit',
@@ -652,7 +653,7 @@ def pv(i):
 
 def infl(cl, key):
     """A monthly cost inflated from the 2026 base."""
-    return f'{LV(key)}*(1+{LV("cost_infl")})^(YEAR({cl}$3)-2026)'
+    return f'{LV(key)}*(1+{LV("cost_infl")})^(YEAR({cl}$3)-{LV("base_year")})'
 
 # ===========================================================================
 # COGS
@@ -698,8 +699,9 @@ line(CG, 18, 'Installer partner commission', 'EUR',
 line(CG, 19, 'Total cost of goods sold', 'EUR',
      lambda cl, i: f'=SUM({cl}13:{cl}18)', EUR, grand=True)
 line(CG, 21, 'Gross profit per unit', 'EUR/unit',
-     lambda cl, i: f'=IFERROR(({RFY}!{cl}50-{cl}19)/{RFY}!{cl}34,0)', EUR, 'ratio',
-     annual=lambda a: f'=IFERROR(({RFY}!{a}50-{a}19)/{RFY}!{a}34,0)')
+     lambda cl, i: f'=IFERROR(({RFY}!{cl}50-{RFY}!{cl}49-{cl}19)/{RFY}!{cl}34,0)', EUR, 'ratio',
+     annual=lambda a: f'=IFERROR(({RFY}!{a}50-{RFY}!{a}49-{a}19)/{RFY}!{a}34,0)',
+     note='trading revenue less cost of sales, per unit; the subsidy is left out')
 
 # ===========================================================================
 # PERSONNEL
@@ -752,7 +754,7 @@ line(PE, 20, 'Total headcount', 'FTE', lambda cl, i: f'={cl}11+{cl}19', NUM1,
      grand=True, annual='end')
 
 bar(PE, 25, 'COST BY DEPARTMENT')
-SI = lambda cl: f'(1+{LV("sal_infl")})^(YEAR({cl}$3)-2026)'
+SI = lambda cl: f'(1+{LV("sal_infl")})^(YEAR({cl}$3)-{LV("base_year")})'
 line(PE, 26, 'Research and development', 'EUR/mo',
      lambda cl, i: f'={cl}16*{LV("c_rnd")}*{SI(cl)}', EUR)
 line(PE, 27, 'Sales and marketing', 'EUR/mo',
@@ -763,10 +765,12 @@ line(PE, 28, 'General and administrative', 'EUR/mo',
                     f'+{cl}17*{LV("c_ga")}+{cl}18*{LV("c_tech")})*{SI(cl)}'), EUR)
 line(PE, 29, 'Total people cost', 'EUR/mo', lambda cl, i: f'=SUM({cl}26:{cl}28)',
      EUR, total=True)
+YEAR_OF_COL = {v: k for k, v in YC.items()}
 line(PE, 31, 'Average cost per person', 'EUR/mo',
      lambda cl, i: f'=IFERROR({cl}29/{cl}20,0)', EUR, 'ratio',
-     annual=lambda a: f'=IFERROR({a}29/12/{a}20,0)',
-     note='annual column: the year\'s people cost over twelve, per head at December')
+     annual=lambda a: (f'=IFERROR(SUM({YMONTHS[YEAR_OF_COL[a]][0]}29:{YMONTHS[YEAR_OF_COL[a]][-1]}29)'
+                       f'/SUM({YMONTHS[YEAR_OF_COL[a]][0]}20:{YMONTHS[YEAR_OF_COL[a]][-1]}20),0)'),
+     note='annual column: the year\'s people cost over the year\'s person-months')
 print('cogs and personnel written')
 
 # ===========================================================================
@@ -831,7 +835,7 @@ line(OP, 19, 'Total', 'EUR',
 bar(OP, 21, 'GENERAL AND ADMINISTRATIVE, EVERYTHING ELSE')
 line(OP, 22, 'Offices, IT and travel', 'EUR',
      lambda cl, i: (f'=Personnel!{cl}20*({LV("fac_fte")}+{LV("it_fte")}'
-                    f'+{LV("trav_fte")})*(1+{LV("cost_infl")})^(YEAR({cl}$3)-2026)'), EUR,
+                    f'+{LV("trav_fte")})*(1+{LV("cost_infl")})^(YEAR({cl}$3)-{LV("base_year")})'), EUR,
      note='scales with the number of people on the payroll, inflated like every other cost')
 line(OP, 23, 'Recruitment', 'EUR',
      lambda cl, i: ('=0' if i == 0 else
@@ -904,12 +908,15 @@ line(FS, 32, 'Cash from operations', 'EUR', lambda cl, i: f'=SUM({cl}27:{cl}31)'
      EUR, total=True)
 line(FS, 33, 'Capital expenditure', 'EUR', lambda cl, i: f'=-{cl}61', EUR)
 line(FS, 34, 'Cash from investing', 'EUR', lambda cl, i: f'={cl}33', EUR, total=True)
+def same_month(cl, date_ref):
+    """True in the month of date_ref, whatever day of the month is typed."""
+    return f'AND(YEAR({cl}$3)=YEAR({date_ref}),MONTH({cl}$3)=MONTH({date_ref}))'
 line(FS, 35, 'Equity raised', 'EUR',
-     lambda cl, i: (f'=IF({cl}$3={LV("eq1_d")},{LV("eq1_a")},0)'
-                    f'+IF({cl}$3={LV("eq2_d")},{LV("eq2_a")},0)'), EUR,
-     note='dates and amounts are on the Assumptions funding block')
+     lambda cl, i: (f'=IF({same_month(cl, LV("eq1_d"))},{LV("eq1_a")},0)'
+                    f'+IF({same_month(cl, LV("eq2_d"))},{LV("eq2_a")},0)'), EUR,
+     note='dates and amounts are on the Assumptions funding block; any day in the month counts')
 line(FS, 36, 'Loan drawn', 'EUR',
-     lambda cl, i: f'=IF({cl}$3={LV("loan_d")},{LV("loan_a")},0)', EUR)
+     lambda cl, i: f'=IF({same_month(cl, LV("loan_d"))},{LV("loan_a")},0)', EUR)
 line(FS, 37, 'Cash from financing', 'EUR', lambda cl, i: f'={cl}35+{cl}36', EUR, total=True)
 line(FS, 38, 'Movement in cash', 'EUR', lambda cl, i: f'={cl}32+{cl}34+{cl}37', EUR)
 line(FS, 39, 'Cash at the start of the month', 'EUR',
@@ -944,6 +951,15 @@ line(FS, 56, 'Total liabilities and equity', 'EUR', lambda cl, i: f'={cl}52+{cl}
      total=True, annual='end')
 line(FS, 58, 'Check   assets less liabilities and equity, must be nil', 'EUR',
      lambda cl, i: f'={cl}48-{cl}56', NUM2, 'check', annual='end')
+def _ym(ref):
+    return f'(YEAR({ref})*12+MONTH({ref}))'
+def _due(cl, d, a):
+    return f'IF({_ym(cl + "$3")}>={_ym(LV(d))},{LV(a)},0)'
+line(FS, 59, 'Check   funding received equals the funding inputs, must be nil', 'EUR',
+     lambda cl, i: (f'=SUM($E$35:{cl}35)+SUM($E$36:{cl}36)'
+                    f'-({_due(cl, "eq1_d", "eq1_a")}+{_due(cl, "eq2_d", "eq2_a")}+{_due(cl, "loan_d", "loan_a")})'),
+     NUM2, 'check', annual='end',
+     note='cumulative equity and loan received against what the funding block says should have arrived by now')
 
 bar(FS, 60, 'SUPPORTING SCHEDULES')
 line(FS, 61, 'Capital expenditure in the month', 'EUR',
@@ -1016,10 +1032,14 @@ d_line(10, 'Marketing cost per unit sold',
 d_bar(13, 'PROFIT AND LOSS')
 d_line(14, 'Revenue', lambda y: yc('Financial Statements', 6, y), EUR, total=True)
 d_line(15, 'Gross profit', lambda y: yc('Financial Statements', 8, y), EUR)
-d_line(16, 'Gross margin', lambda y: yc('Financial Statements', 9, y), PCT1, 'ratio')
+d_line(16, 'Gross margin',
+       lambda y: f"=IF('Revenue Forecast'!{YC[y]}34=0,\"n/a\",{yc('Financial Statements', 9, y)[1:]})",
+       PCT1, 'ratio', note='n/a in a year with no units sold')
 d_line(17, 'Operating expenses', lambda y: yc('Financial Statements', 14, y), EUR)
 d_line(18, 'EBITDA', lambda y: yc('Financial Statements', 16, y), EUR, total=True)
-d_line(19, 'EBITDA margin', lambda y: yc('Financial Statements', 17, y), PCT1, 'ratio')
+d_line(19, 'EBITDA margin',
+       lambda y: f"=IF('Revenue Forecast'!{YC[y]}34=0,\"n/a\",{yc('Financial Statements', 17, y)[1:]})",
+       PCT1, 'ratio')
 d_line(20, 'Net income', lambda y: yc('Financial Statements', 23, y), EUR)
 
 d_bar(22, 'PEOPLE')
@@ -1031,7 +1051,8 @@ d_line(26, 'Revenue per person',
 
 d_bar(28, 'CASH AND FUNDING')
 d_line(29, 'Equity raised in the year', lambda y: yc('Financial Statements', 35, y), EUR)
-d_line(30, 'Capital expenditure', lambda y: yc('Financial Statements', 61, y), EUR)
+d_line(30, 'Capital expenditure', lambda y: '=-' + yc('Financial Statements', 61, y)[1:], EUR,
+       note='shown negative like every other cost on this tab')
 d_line(31, 'Cash at year end', lambda y: yc('Financial Statements', 40, y), EUR, total=True)
 d_line(32, 'Lowest cash during the year',
        lambda y: (f"=MIN('Financial Statements'!{YMONTHS[y][0]}40:"
@@ -1063,6 +1084,9 @@ su_line(37, 'Lowest the cash balance ever gets, after the raise',
         f'=MIN({POSTR})', note='the moment the plan is closest to running out')
 su_line(38, 'The month it happens',
         f'=INDEX({DATES},MATCH(D37,{POSTR},0)+{RIDX}-1)', DATE_FMT)
+su_line(39, 'Lowest the cash balance gets before the raise',
+        f'=MIN(INDEX({CASHR},1):INDEX({CASHR},{RIDX}-1))',
+        note='the committed 2026 plan has to survive to the raise on its own; negative here means it does not')
 
 TO_TROUGH = lambda row: (f'SUMIF({DATES},"<="&{TROUGH},'
                          f'{FSQ}!$E${row}:${MC[-1]}${row})')
@@ -1071,22 +1095,24 @@ su_line(41, 'Equity raised up to that month', f'={TO_TROUGH(35)}')
 su_line(42, 'Convertible loan drawn', f'={TO_TROUGH(36)}')
 su_line(43, 'Total money available', '=SUM(D40:D42)', tot=True)
 su_line(44, 'Production lines and tooling', f'={TO_TROUGH(61)}',
-        note='two assembly lines plus tooling, each paid twelve months before it produces')
+        note='in-house production lines paid for up to the low point; nil in a case with no lines')
 su_line(45, 'Absorbed by operations and working capital', f'=-{TO_TROUGH(32)}',
-        note='trading losses, plus the receivables and stock the ramp ties up')
-su_line(46, 'Cash still in the bank at the low point', f'=D37')
+        note='trading losses plus the receivables the ramp ties up, less the payables it creates')
+su_line(46, 'Cash still in the bank at the low point', f'=D37',
+        note='negative means the plan has spent more than the money available')
 su_line(47, 'Total', '=SUM(D44:D46)', tot=True,
         note='ties to total money available')
+su_line(48, 'Check   sources less uses, must be nil', '=D43-D47', NUM2)
 
 d_bar(49, 'IS THE RAISE THE RIGHT SIZE')
 su_line(50, 'Cash the moment the raise lands', f'=INDEX({CASHR},{RIDX})')
 su_line(51, 'Most of the raise ever drawn down', '=D50-D37')
 su_line(52, 'Share of the raise the plan actually uses',
         f'=IFERROR(D51/SUM(INDEX({EQR},{RIDX}):INDEX({EQR},{NM})),0)', PCT1, tot=True,
-        note='well under 100% means the raise is bigger than this plan needs')
+        note='well under 100% means the raise is bigger than this plan needs; over 100% means the plan needs more than the raise')
 su_line(53, 'Months of operating cost left at the low point',
         f"=IFERROR(D37/(-HLOOKUP(YEAR(D38),{FSQ}!$BN$3:$BR$14,12,FALSE)/12),0)", NUM1,
-        note='cash at the low point over that year\'s average monthly operating cost. Three months or more is comfortable')
+        note='cash at the low point over that year\'s average monthly operating cost. Three or more is comfortable; negative means the cash has run out')
 
 DB['B34'] = 'Balance sheet check, worst month across the whole model'
 DB['B34'].font = f(bold=True)
@@ -1191,7 +1217,7 @@ cv(12, 'Currency', 9, color=GREY); CV.cell(12, 3, 'EUR, ex VAT unless stated').f
 cv(13, 'Period', 9, color=GREY); CV.cell(13, 3, 'January 2026 to December 2030, monthly').font = Font(name=FONT, size=9, color=WHITE)
 cv(14, 'Fiscal year', 9, color=GREY); CV.cell(14, 3, 'Calendar').font = Font(name=FONT, size=9, color=WHITE)
 cv(15, 'Units', 9, color=GREY); CV.cell(15, 3, 'Whole euros').font = Font(name=FONT, size=9, color=WHITE)
-cv(18, 'Read the How to read me tab first.', 9, color=GREY)
+cv(18, 'Start with the Summary tab, then How to read me.', 9, color=GREY)
 cv(21, 'STRICTLY CONFIDENTIAL', 10, True, RED)
 
 # ===========================================================================
@@ -1259,19 +1285,22 @@ for lbl, drow, fmt in (('Units sold', 6, NUM), ('Revenue', 14, EUR), ('Gross mar
     for k, y in enumerate(YEARS):
         c = SM.cell(r, 3 + k, f'=Dashboard!{DCOL[y]}{drow}'); c.number_format = fmt; c.alignment = R
         c.font = f(bold=lbl in ('EBITDA', 'Cash at year end'))
-_r[0] += 1; r = _r[0]
+_r[0] += 2; r = _r[0]; SM_LOW_ROW = r
 SM.cell(r, 2, 'Lowest cash after the raise, and when').font = f(bold=True)
 SM.cell(r, 3, '=Dashboard!D37').number_format = EUR; SM.cell(r, 3).font = f(bold=True); SM.cell(r, 3).alignment = R
-SM.cell(r, 4, '=Dashboard!D38').number_format = DATE_FMT; SM.cell(r, 4).alignment = R
+SM.cell(r, 4, '=Dashboard!D38').number_format = DATE_FMT; SM.cell(r, 4).font = f(); SM.cell(r, 4).alignment = L
 _r[0] += 1; r = _r[0]
 SM.cell(r, 2, 'Months of operating cost that covers').font = f()
-SM.cell(r, 3, '=Dashboard!D53').number_format = NUM1; SM.cell(r, 3).alignment = R
+SM.cell(r, 3, '=Dashboard!D53').number_format = NUM1; SM.cell(r, 3).font = f(); SM.cell(r, 3).alignment = R
+_r[0] += 1; r = _r[0]
+SM.cell(r, 2, 'Lowest cash before the raise').font = f()
+SM.cell(r, 3, '=Dashboard!D39').number_format = EUR; SM.cell(r, 3).font = f(); SM.cell(r, 3).alignment = R
 s_gap()
 s_bar('BOTH CASES SIDE BY SIDE  (typed on 7 September 2026; the table above is live)')
 s_text('Base, EUR3m: 310 units in 2027, 1,100 in 2028, 3,300 in 2029, 7,200 in 2030 (EUR123m revenue). EBITDA negative until 2030 (EUR18m), 84 people, cash low of -EUR1.4m in December 2029.',
        'Aggressive, EUR10m: 15,100 units and EUR259m revenue in 2030, EBITDA positive from 2028 (EUR62m in 2030), 256 people, cash low EUR4.9m in December 2027.',
        'With the BOM priced on two-year volume, base EBITDA turns positive in 2028 and its cash low rises to about EUR1.4m.',
-       'Spending 50% more on marketing in 2028-29 takes base volume past 5,000 units in 2029 and swings that year\'s EBITDA from -2.9m to +12.7m.')
+       'Crossing 5,000 units a year one year earlier (more marketing or faster partner signing) moves that year\'s EBITDA by roughly EUR15m, because the BOM drops a tier.')
 s_gap()
 s_bar('ASSUMPTIONS TO BE CAREFUL WITH')
 s_text('1. BOM cost-down from EUR9,984 to EUR4,998 (50%). Learning-curve evidence supports about 30%. No supplier quote yet. Everything rests on this.',
@@ -1297,6 +1326,23 @@ s_text('')
 _r[0] += 1
 SM.cell(_r[0], 2, 'Detail: How to read me for the colour code and switches, Dashboard for the year view, Assumptions for every input.').font = f(italic=True, color=GREY, size=9, name=NOTE_FONT)
 SM.sheet_view.zoomScale = 110
+
+# ---- checks that shout: red when cash is negative or a check row is not nil -------
+from openpyxl.formatting.rule import CellIsRule, FormulaRule
+RED_FONT = Font(name=FONT, size=10, bold=True, color='FFC00000')
+RED_FILL = PatternFill('solid', start_color='FFFFC7CE', end_color='FFFFC7CE')
+FS.conditional_formatting.add(f'E40:{MC[-1]}40', CellIsRule(operator='lessThan', formula=['0'], font=RED_FONT))
+FS.conditional_formatting.add(f'BN40:BR40', CellIsRule(operator='lessThan', formula=['0'], font=RED_FONT))
+for chk_row in (58, 59):
+    FS.conditional_formatting.add(f'E{chk_row}:BR{chk_row}',
+                                  FormulaRule(formula=[f'ABS(E{chk_row})>0.01'], font=RED_FONT, fill=RED_FILL))
+DB.conditional_formatting.add('D37:D39', CellIsRule(operator='lessThan', formula=['0'], font=RED_FONT))
+DB.conditional_formatting.add('D48', FormulaRule(formula=['ABS(D48)>0.01'], font=RED_FONT, fill=RED_FILL))
+DB.conditional_formatting.add('D53', CellIsRule(operator='lessThan', formula=['0'], font=RED_FONT))
+SM.conditional_formatting.add(f'C{SM_LOW_ROW}:C{SM_LOW_ROW+2}', CellIsRule(operator='lessThan', formula=['0'], font=RED_FONT))
+SM.conditional_formatting.add(f'C{SM_LOW_ROW-6}:G{SM_LOW_ROW-1}', CellIsRule(operator='lessThan', formula=['0'], font=RED_FONT))
+AS.freeze_panes = 'D4'
+DB.freeze_panes = 'D4'
 
 # ---- tab order, matching the house layout ---------------------------------
 order = ['Summary', 'Cover', 'How to read me', 'Assumptions', 'Financial Statements',

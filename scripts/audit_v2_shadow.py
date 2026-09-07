@@ -45,7 +45,6 @@ sal_infl  = n(live('Annual salary increase'))
 taxr      = n(live('Corporate income tax rate'))
 loan_rate = n(live('Interest on the convertible loan'))
 sell_from = dat('First month we can sell')
-hire_from = dat('Hiring starts from')
 freeze_to = dat('Committed 2026 plan holds until')
 grant_a   = n(live('Subsidy received'));  grant_d = dat('Subsidy received in')
 dso, dpo, dio = (n(live('Days sales outstanding')), n(live('Days payable outstanding')),
@@ -147,7 +146,7 @@ S = {k: [0.0] * NM for k in (
 for _pass in range(3):
     for i in range(NM):
         d, y = md(i), yr(i)
-        S['spend'][i] = mkt[y]
+        S['spend'][i] = 0.0 if d < sell_from else mkt[y]
         S['ib_open'][i] = 0.0 if i == 0 else S['ib_close'][i-1]
         ibo = S['ib_open'][i]
         S['cpl_eff'][i] = cpl

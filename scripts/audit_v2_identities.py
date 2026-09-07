@@ -49,6 +49,8 @@ chk('total equity = share capital + retained earnings',
 chk('liabilities and equity = liabilities + equity',
     lambda i:(abs(F56[i]-(F52[i]+F55[i]))<T,''))
 chk('balance sheet check row is nil',lambda i:(abs(F58[i])<T,f'{F58[i]:.4f}'))
+F59=f(59)
+chk('funding check row is nil (equity and loan received equal the inputs)',lambda i:(abs(F59[i])<T,f'{F59[i]:.2f}'))
 chk('retained earnings = cumulative net income',
     lambda i:(abs(F54[i]-sum(F23[:i+1]))<T,f'{F54[i]:.2f} vs {sum(F23[:i+1]):.2f}'))
 chk('net PPE = gross book value less accumulated depreciation',
@@ -86,7 +88,6 @@ for rr in range(1,200):
     b=AS.cell(rr,2).value
     if isinstance(b,str): AS_lbl.setdefault(b.strip(),rr)
 sell_from=AS.cell(AS_lbl['First month we can sell'],6).value.date()
-hire_from=AS.cell(AS_lbl['Hiring starts from'],6).value.date()
 freeze_to=AS.cell(AS_lbl['Committed 2026 plan holds until'],6).value.date()
 chk('units never exceed demand',lambda i:(R34[i]<=R11[i]+0.5,f'{R34[i]} vs demand {R11[i]:.1f}'))
 chk('units never exceed selling capacity',lambda i:(R34[i]<=R24[i]+0.5,f'{R34[i]} vs {R24[i]:.1f}'))

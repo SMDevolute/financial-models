@@ -23,7 +23,7 @@ import openpyxl
 SOFFICE = '/Applications/LibreOffice.app/Contents/MacOS/soffice'
 HERE = os.path.dirname(os.path.abspath(__file__))
 ERRS = ('#REF!', '#VALUE!', '#DIV/0!', '#NAME?', '#N/A', '#NULL!', '#NUM!', 'Err:')
-CASE_CELL, TIER_CELL, CHECK_ROW = 'E5', 'E6', 58
+CASE_CELL, TIER_CELL, CHECK_ROWS = 'E5', 'E6', (58, 59)
 
 
 def recalc(path, outdir):
@@ -50,7 +50,7 @@ def phase1(recalced):
         errs = [f'{ws.title}!{c.coordinate}={c.value}' for ws in v for row in ws.iter_rows()
                 for c in row if isinstance(c.value, str) and any(e in c.value for e in ERRS)]
         fs = v['Financial Statements']
-        chk = [fs.cell(CHECK_ROW, c).value for c in range(2, fs.max_column + 1)]
+        chk = [fs.cell(r, c).value for r in CHECK_ROWS for c in range(2, fs.max_column + 1)]
         worst = max((abs(x) for x in chk if isinstance(x, (int, float))), default=0.0)
         good = not errs and worst < 0.01
         ok &= good
