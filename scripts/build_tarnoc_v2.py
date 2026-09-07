@@ -605,21 +605,23 @@ bar(RF, 14, 'SELLING CAPACITY')
 line(RF, 15, 'Share sold direct', '%', lambda cl, i: '=' + YL('direct', cl),
      PCT, 'link', annual='avg',
      note='the rest is sold by trained installer partners')
-line(RF, 16, 'Reps hired', 'FTE',
+line(RF, 16, 'Rep hiring rate', 'FTE/month',
      lambda cl, i: f'=IF({cl}$3<{LV("sell_from")},0,' + YL('rep_add', cl) + ')',
-     NUM2, 'link', note='no sales reps before the first month we can sell')
+     NUM2, 'link', note='the planned rate, which can be less than one a month')
 line(RF, 17, 'Reps in post', 'FTE',
-     lambda cl, i: (f'={LV("rep_start")}+{cl}16' if i == 0 else f'={MC[i-1]}17+{cl}16'),
-     NUM1, annual='end')
+     lambda cl, i: f'=ROUNDDOWN({LV("rep_start")}+SUM(${MC[0]}16:{cl}16),0)',
+     NUM1, annual='end',
+     note='whole people only, so half a rep a month means one every second month')
 line(RF, 18, 'Capacity from our own reps', 'units/mo',
      lambda cl, i: f'={cl}17*{LV("quota")}',
      note='every rep in post carries full quota from the month they are hired')
-line(RF, 19, 'Installer partners signed', 'partners',
+line(RF, 19, 'Partner signing rate', 'partners/month',
      lambda cl, i: f'=IF({cl}$3<{LV("sell_from")},0,' + YL('ptr_add', cl) + ')',
-     NUM1, 'link', note='no partner intros before the first month we can sell')
+     NUM2, 'link', note='the planned rate, which can be less than one a month')
 line(RF, 20, 'Installer partners on the books', 'partners',
-     lambda cl, i: (f'={LV("ptr_start")}+{cl}19' if i == 0 else f'={MC[i-1]}20+{cl}19'),
-     NUM1, annual='end')
+     lambda cl, i: f'=ROUNDDOWN({LV("ptr_start")}+SUM(${MC[0]}19:{cl}19),0)',
+     NUM1, annual='end',
+     note='whole partners only, signed as the running total passes each whole number')
 line(RF, 21, 'Capacity from the installer channel', 'units/mo',
      lambda cl, i: f'={cl}20*{LV("per_ptr")}',
      note='every partner on the books sells full volume from the month they are signed')
@@ -1349,9 +1351,9 @@ SM.cell(r, 2, 'Lowest cash before the raise').font = f()
 SM.cell(r, 3, '=Dashboard!D39').number_format = EUR; SM.cell(r, 3).font = f(); SM.cell(r, 3).alignment = R
 s_gap()
 s_bar('THIS CASE IN TWO LINES  (typed on 7 September 2026; the table above is live)' if SINGLE else 'BOTH CASES SIDE BY SIDE  (typed on 7 September 2026; the table above is live)')
-s_text(only('both,base', 'Base, EUR3m: 350 / 1,350 / 4,100 / 7,400 units in 2027 to 2030, EUR127m revenue in 2030. Gross margin 10%, 25%, 37%, 37%. EBITDA -2.5m, +0.8m, +18m, +34m. 95 people.'),
-       only('both,base', '     Cash low EUR0.6m in December 2027, about two months of cost; 81% of the raise used.'),
-       only('both,aggr', 'Aggressive, EUR10m: 2,800 / 6,900 / 11,700 / 18,800 units, EUR321m revenue in 2030. Gross margin 28%, 38%, 37%, 37%. EBITDA +4.8m, +23m, +45m, +79m. 301 people.'),
+s_text(only('both,base', 'Base, EUR3m: 354 / 1,344 / 4,122 / 7,407 units in 2027 to 2030, EUR126m revenue in 2030. Gross margin 10%, 25%, 37%, 37%. EBITDA -2.5m, +0.9m, +17m, +34m. 95 people.'),
+       only('both,base', '     Cash low EUR0.6m in December 2027, about two months of cost; 80% of the raise used.'),
+       only('both,aggr', 'Aggressive, EUR10m: 2,812 / 6,864 / 11,730 / 18,780 units, EUR321m revenue in 2030. Gross margin 28%, 38%, 37%, 37%. EBITDA +4.8m, +23m, +45m, +79m. 302 people.'),
        only('both,aggr', '     EUR9m of capex in Nov 2026 and Jan 2027 for two automated lines. Cash low EUR1.0m in January 2027, six weeks of cost; 90% of the raise used.'),
        {'base': 'Gross margin steps from about 10% to 25% the year two-year volume passes 5,000 units (2028), and to 37% past 10,000 (2029).',
         'aggr': 'Gross margin steps from about 10% to 25% the year two-year volume passes 5,000 units (2027), and to 37% past 10,000 (2028).'}.get(MODE,

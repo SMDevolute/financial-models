@@ -149,6 +149,8 @@ S = {k: [0.0] * NM for k in (
 
 # annual unit totals need a two-pass approach because the BOM tier key uses them
 for _pass in range(3):
+    rep_raw = 0.0
+    ptr_raw = 0.0
     for i in range(NM):
         d, y = md(i), yr(i)
         S['spend'][i] = 0.0 if d < sell_from else mkt[y]
@@ -160,10 +162,12 @@ for _pass in range(3):
         S['demand_f'][i] = S['sql'][i]*q2w
         S['direct'][i] = direct[y]
         S['rep_h'][i] = 0.0 if d < sell_from else repadd[y]
-        S['rep_hc'][i] = (rep_s + S['rep_h'][i]) if i == 0 else S['rep_hc'][i-1] + S['rep_h'][i]
+        rep_raw = rep_raw + S['rep_h'][i]
+        S['rep_hc'][i] = float(math.floor(round(rep_s + rep_raw, 9)))
         S['dcap'][i] = S['rep_hc'][i]*quota
         S['ptr_h'][i] = 0.0 if d < sell_from else ptradd[y]
-        S['ptr_hc'][i] = (ptr_s + S['ptr_h'][i]) if i == 0 else S['ptr_hc'][i-1] + S['ptr_h'][i]
+        ptr_raw = ptr_raw + S['ptr_h'][i]
+        S['ptr_hc'][i] = float(math.floor(round(ptr_s + ptr_raw, 9)))
         S['ccap'][i] = S['ptr_hc'][i]*per_ptr
         S['demand_p'][i] = S['ptr_hc'][i]*ptr_ord[y]
         S['demand'][i] = S['demand_f'][i] + S['demand_p'][i]

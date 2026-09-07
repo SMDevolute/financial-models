@@ -47,3 +47,15 @@ Two of the audit's four phases (the shadow model and the identities check) crash
 - Model work: Drive upload of the current files; a sensitivity table; linking hiring to the raise date; other cost inflation still 10%; retiring model A.
 
 Reference documents: `docs/tarnoc-v2-summary-2026-09-07.md` (how the model works, outcomes, vulnerabilities), `docs/tarnoc-assumptions-research-2026-09-04.md` (market evidence).
+
+## Later on 7 September: whole people
+
+Simon asked whether we can hire half a rep. We could not, and the model was doing it.
+
+`Revenue Forecast` row 16 took the hire rate straight from the Assumptions table and row 17 accumulated it, so base 2027 ran 1.5, 2.0, 2.5 reps. Installer partners had the same problem in base 2028, where the signing rate is 1.5 a month. Base showed a fractional headcount in 33 of the 60 months, aggressive in 15. Reps and partners were the only rows affected; every ratio-driven role was already rounded.
+
+Fixed by keeping the rate on row 16 (relabelled "Rep hiring rate", and row 19 "Partner signing rate") and flooring the running total on rows 17 and 20, so half a rep a month means one rep every second month. The shadow model in `scripts/audit_v2_shadow.py` was changed to match. All three workbooks rebuilt and re-audited, four phases, 114 of 114 rows agreeing.
+
+Effect on the numbers, all in the base case: 2028 units 1,350 to 1,344, 2030 units 7,418 to 7,407, 2030 revenue EUR126.5m to EUR126.3m. Fewer rep-months means slightly lower cost, so 2027 EBITDA improves from -2.52m to -2.50m and 2028 from +0.84m to +0.86m. Cash low rises from EUR571k to EUR599k, cover from 2.2 to 2.3 months, and the raise used falls from 81% to 80%. Aggressive volumes and cash low are unchanged; 2029 and 2030 EBITDA rise by about EUR30k and EUR50k. The 2028 plus 2029 volume that clears the 5,000 tier is now 5,466 rather than 5,472.
+
+Two stale figures in `docs/tarnoc-v2-summary-2026-09-07.md` were corrected at the same time: partner counts needed by 2029 (67 base and 181 aggressive, not 145 and 260) and aggressive headcount (90 in 2027 and 302 in 2030, not 89 and 289).

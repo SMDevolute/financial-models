@@ -1,6 +1,8 @@
 # Tarnoc v2: how the model works, outcomes, vulnerabilities
 
 Written 2026-09-07, end of day. Replaces `tarnoc-v2-summary-2026-09-04.md`.
+Updated 2026-09-07 after reps and installer partners were made whole people (they
+had been accumulating in halves); figures below are the rebuilt ones.
 Three workbooks from one build script (`scripts/build_tarnoc_v2.py`, `MODE=both|base|aggr`): `models/Tarnoc_v2_base_2026-09-07.xlsx` (base case only, single Value column, no in-house lines or capex anywhere), `models/Tarnoc_v2_aggressive_2026-09-07.xlsx` (aggressive only), and `models/Tarnoc_v2_2026-09-07.xlsx` (both cases on the switch, the master). Check any of them with `python3 scripts/audit_v2.py <file>`; the audit detects which shape it is.
 The Drive copy `Tarnoc_v2_2026-09-03.xlsx` is behind everything since 3 September; upload the local file as a new version before sharing.
 
@@ -27,13 +29,13 @@ Working capital: DSO 20, DPO 45, no inventory (the client's figures). Wages +5% 
 
 | | Base, EUR3m | Aggressive, EUR10m |
 | --- | --- | --- |
-| Units 2027 / 2028 / 2029 / 2030 | 350 / 1,350 / 4,100 / 7,400 | 2,800 / 6,900 / 11,700 / 18,800 |
-| Revenue 2030 | EUR127m | EUR321m |
+| Units 2027 / 2028 / 2029 / 2030 | 354 / 1,344 / 4,122 / 7,407 | 2,812 / 6,864 / 11,730 / 18,780 |
+| Revenue 2030 | EUR126m | EUR321m |
 | Gross margin 2027 / 2028 / 2029 / 2030 | 10% / 25% / 37% / 37% | 28% / 38% / 37% / 37% |
-| EBITDA 2027 / 2028 / 2029 / 2030 | -2.5m / +0.8m / +18m / +34m | +4.8m / +23m / +45m / +79m |
-| Headcount end 2030 | 95 | 301 |
-| Cash low after the raise | EUR0.6m, Dec 2027, about 2 months of opex | EUR1.0m, Jan 2027, about 6 weeks of opex |
-| Share of the raise used | 81% | 90% |
+| EBITDA 2027 / 2028 / 2029 / 2030 | -2.5m / +0.9m / +17m / +34m | +4.8m / +23m / +45m / +79m |
+| Headcount end 2030 | 95 | 302 |
+| Cash low after the raise | EUR0.6m, Dec 2027, 2.3 months of opex | EUR1.0m, Jan 2027, about 6 weeks of opex |
+| Share of the raise used | 80% | 90% |
 | Cash end 2030 | EUR43m | EUR123m |
 
 Gross margin steps from about 10% to 25% the year two-year volume passes 5,000 units, and to 37% past 10,000. In base that happens in 2028 and 2029; in aggressive in 2027 and 2028.
@@ -47,9 +49,9 @@ Commercially, it holds together on one condition and has three soft spots.
 The condition: the supplier prices the BOM on two-year volume. Without that, 2027 and 2028 are priced at EUR9,984 a unit, both cases lose a year of margin, and base does not close on EUR3m.
 
 The soft spots:
-1. Base turns on about 500 units. 2028 plus 2029 volume is 5,500 against the 5,000 tier. Below it, 2028 costs EUR2,900 more per unit, EBITDA 2028 goes back to about -3m and cash below zero.
+1. Base turns on about 470 units. 2028 plus 2029 volume is 5,466 against the 5,000 tier. Below it, 2028 costs EUR2,900 more per unit, EBITDA 2028 goes back to about -3m and cash below zero.
 2. Aggressive spends EUR9m on lines that, as modelled, save nothing. The BOM is the same whichever line builds the unit, so the lines cost operators, facility and capex for capacity the plan barely uses until 2030. The investor question is "why build" and the answer has to be strategic (control, quality, independence from one partner) or a partner fee the client has not yet told us.
-3. Aggressive is profitable in its first selling year (EUR4.8m in 2027 on 2,800 units) because two-year volume puts 2027 straight into the second BOM tier. That is what the arithmetic says; it is also the kind of first year an investor will not believe without the supplier contract in hand.
+3. Aggressive is profitable in its first selling year (EUR4.8m in 2027 on 2,812 units) because two-year volume puts 2027 straight into the second BOM tier. That is what the arithmetic says; it is also the kind of first year an investor will not believe without the supplier contract in hand.
 
 ## Assumptions to be careful with
 
@@ -59,12 +61,12 @@ The soft spots:
 4. Rep quota 20 units a month. HVAC and solar benchmarks 6 to 10. Matters in 2027-28.
 5. 20% lead-to-order at EUR600 of marketing per customer. The client's number, at the top of published benchmarks.
 6. No warranty reserve beyond the 3% inside the BOM. Peers carry 1.5 to 3.5% of revenue.
-7. Direct share falling to 30% by 2030 needs 145 (base) to 260 (aggressive) active installer partners by 2029.
-8. Aggressive headcount: 16 to 89 people in 2027, 289 by 2030 at EUR1.1m revenue per head. Incumbents run EUR200-330k; outsourced assembly and pass-through installation explain some of the gap, not all.
+7. Direct share falling to 30% by 2030 needs 67 (base) to 181 (aggressive) active installer partners by the end of 2029, and 112 to 277 by the end of 2030.
+8. Aggressive headcount: 16 to 90 people in 2027, 302 by 2030 at EUR1.1m revenue per head. Incumbents run EUR200-330k; outsourced assembly and pass-through installation explain some of the gap, not all.
 
 ## Where the plan is vulnerable
 
-- Base: the 5,000-unit cliff in 2028 and two months of cash cover in December 2027. Base now hires 4 and 3 R&D engineers in 2027-28, signs 1 partner a month in 2027, hires 0.5 reps a month in 2027 and runs one field engineer per 600 units (81% of the raise used, Simon's instruction of 2026-09-07).
+- Base: the 5,000-unit cliff in 2028 and 2.3 months of cash cover in December 2027. Base now hires 4 and 3 R&D engineers in 2027-28, signs 1 partner a month in 2027, hires reps at a rate of 0.5 a month in 2027 (one every second month) and runs one field engineer per 600 units (80% of the raise used, Simon's instruction of 2026-09-07).
 - Aggressive: six weeks of cash cover in January 2027 after EUR9m of capex, with the first unit sold that same month. Any slip in the raise, the lines or the launch and the plan needs more money. Simon asked for both 90% use of the raise and 2-3 months of cover; at EUR10m only one can hold.
 - Both: the turbineketel sells below its tier-1 BOM. A forced price cut makes the first tier worse.
 - Service prices for the turbineketel (EUR60 and EUR90 a year) sit below the Dutch market. Upside if raised.
