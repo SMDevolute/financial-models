@@ -44,7 +44,7 @@ On the two-year BOM basis, base EBITDA turns positive in 2028 and the cash low r
 
 ## Where the model is vulnerable
 
-- Base case on EUR3m runs out of cash: -EUR0.25m at the low point in Dec 2029. It needs a bigger raise, the two-year BOM basis, or the marketing push that takes 2029 volume past 5,000 units (see the 2026-09-07 scenario table in the conversation notes below).
+- Base case on EUR3m runs out of cash: -EUR0.25m at the low point in Dec 2029. It needs a bigger raise, the two-year BOM basis, or the marketing push that takes 2029 volume past 5,000 units (options and their effect are under To do, item 1).
 - Both cases are loss-making per unit until the second BOM tier. If the tier is reached a year late, base runs out of cash and aggressive loses about EUR15m of cumulative EBITDA.
 - Aggressive needs 60 hires in 2027, a factory line, and 25 installers signed in the same year. The numbers work; the execution risk is not in the model.
 - The client's prices are unchanged from his original model. If the market forces a lower price, gross margin at tier 1 goes further negative.
