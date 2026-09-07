@@ -1,8 +1,9 @@
 # Tarnoc v2: how the model works, outcomes, vulnerabilities
 
 Written 2026-09-07, end of day. Replaces `tarnoc-v2-summary-2026-09-04.md`.
-Updated 2026-09-07 after reps and installer partners were made whole people (they
-had been accumulating in halves); figures below are the rebuilt ones.
+Updated 2026-09-07 after reps, installer partners and the TTK/Combi+ unit split
+were made whole numbers (they had been running in fractions); figures below are
+the rebuilt ones.
 Three workbooks from one build script (`scripts/build_tarnoc_v2.py`, `MODE=both|base|aggr`): `models/Tarnoc_v2_base_2026-09-07.xlsx` (base case only, single Value column, no in-house lines or capex anywhere), `models/Tarnoc_v2_aggressive_2026-09-07.xlsx` (aggressive only), and `models/Tarnoc_v2_2026-09-07.xlsx` (both cases on the switch, the master). Check any of them with `python3 scripts/audit_v2.py <file>`; the audit detects which shape it is.
 The Drive copy `Tarnoc_v2_2026-09-03.xlsx` is behind everything since 3 September; upload the local file as a new version before sharing.
 
@@ -42,7 +43,7 @@ Gross margin steps from about 10% to 25% the year two-year volume passes 5,000 u
 
 ## Does it make sense
 
-Mechanically, yes. Both cases pass the full audit: no formula errors, balance sheet ties in every month, funding received equals the funding inputs, 116 rows agree with an independent re-implementation, every cross-sheet link lands where it should. Two independent formula-level reviews on 7 September found 20-odd defects, all fixed; their reports are in `docs/`.
+Mechanically, yes. Both cases pass the full audit: no formula errors, balance sheet ties in every month, funding received equals the funding inputs, 114 rows agree with an independent re-implementation, every cross-sheet link lands where it should, and a reality-check phase confirms whole people and units, no negative cash, no headcount going backwards, sane revenue per unit and tax within the statutory rate. Two independent formula-level reviews on 7 September found 20-odd defects, all fixed; their reports are in `docs/`.
 
 Commercially, it holds together on one condition and has three soft spots.
 

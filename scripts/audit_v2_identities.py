@@ -190,4 +190,77 @@ print('\n=== STOCK ROWS THAT USE A SUM, AND FLOW ROWS THAT USE DECEMBER ===')
 print('  (for review: a stock summed over 12 months, or a flow taking only December, is a bug)')
 for k in ('sum','end'):
     print(f'  {k}: ' + ' | '.join(x.split(' ',1)[1] for x in classified[k][:0]) )
+print('\n=== REALITY CHECKS ===')
+print('  (things that must be true of the business, whatever the formulas say)')
+
+def labels(ws, lo=4, hi=70):
+    out = {}
+    for rr in range(lo, hi):
+        b = ws.cell(rr, 2).value
+        if isinstance(b, str):
+            out.setdefault(b.strip(), rr)
+    return out
+
+RFL, PEL, CGL = labels(RF), labels(PE), labels(CG)
+
+# 1. Things counted in people, partners, machines and units must be whole numbers.
+WHOLE = ([(RF, RFL[k], k) for k in (
+              'Reps in post', 'Installer partners on the books', 'Partner managers needed',
+              'Units sold', 'TTK units', 'Combi+ units', 'Installed base at end of month',
+              'In-house lines producing')
+          if k in RFL]
+         + [(CG, CGL[k], k) for k in (
+              'Units sold this calendar year', 'Units sold next calendar year',
+              'Two-year volume, sets the tier') if k in CGL]
+         + [(PE, rr, str(PE.cell(rr, 2).value)) for rr in range(6, 21)
+            if isinstance(PE.cell(rr, 2).value, str)])
+for ws, rr, lbl in WHOLE:
+    vals = row(ws, rr)
+    chk(f'whole numbers only: {lbl[:40]}',
+        lambda i, v=vals: (abs(v[i] - round(v[i])) < 1e-6, f'{v[i]}'))
+
+# 2. Counts we never reverse must not fall.
+for lbl in ('Reps in post', 'Installer partners on the books'):
+    if lbl in RFL:
+        v = row(RF, RFL[lbl])
+        chk(f'never falls: {lbl}',
+            lambda i, v=v: (True, '') if i == 0 else (v[i] >= v[i-1] - T, f'{v[i-1]} to {v[i]}'))
+
+# 3. Cash must never go below zero.
+chk('cash never negative', lambda i: (F40[i] >= -T, f'{F40[i]:,.2f}'))
+
+# 4. Revenue per unit sold has to look like the product we sell.
+R34u, R50 = row(RF, RFL['Units sold']), row(RF, RFL['Total revenue'])
+chk('revenue per unit between EUR5k and EUR40k when we sell',
+    lambda i: (True, '') if R34u[i] <= 0 else
+    (5000 <= R50[i]/R34u[i] <= 40000, f'{R50[i]/R34u[i]:,.0f}'))
+
+# 5. Gross margin cannot exceed 100% and should not be worse than -100%.
+chk('gross margin between -100% and 100%',
+    lambda i: (True, '') if abs(F6[i]) < T else
+    (-1.0 <= F8[i]/F6[i] <= 1.0, f'{F8[i]/F6[i]:.1%}'))
+
+# 6. Nobody is paid an impossible salary.
+PEtot, PEhc = row(PE, PEL['Total people cost']), row(PE, PEL['Total headcount'])
+chk('people cost per head between EUR2k and EUR20k a month',
+    lambda i: (True, '') if PEhc[i] <= 0 else
+    (2000 <= PEtot[i]/PEhc[i] <= 20000, f'{PEtot[i]/PEhc[i]:,.0f}'))
+
+# 7. Tax never exceeds the statutory rate on profit.
+rate = n(AS.cell(AS_lbl['Corporate tax rate'], VALCOL)) if 'Corporate tax rate' in AS_lbl else 0.258
+chk(f'tax never more than {rate:.1%} of profit before tax',
+    lambda i: (True, '') if F21[i] <= 0 else
+    (-F22[i] <= F21[i]*rate + 1.0, f'tax {-F22[i]:,.0f} on PBT {F21[i]:,.0f}'))
+
+# 8. Shares stay between nil and all.
+for lbl in ('Share sold direct',):
+    if lbl in RFL:
+        v = row(RF, RFL[lbl])
+        chk(f'between 0% and 100%: {lbl}', lambda i, v=v: (0 <= v[i] <= 1, f'{v[i]}'))
+
+# 9. The installed base is exactly what we have sold, because nothing is retired.
+IB = row(RF, RFL['Installed base at end of month'])
+chk('installed base equals cumulative units sold',
+    lambda i: (abs(IB[i] - sum(R34u[:i+1])) < T, f'{IB[i]:,.0f} vs {sum(R34u[:i+1]):,.0f}'))
+
 print(f'\n{"ALL CHECKS PASS" if not fails else "FAILURES: " + ", ".join(fails)}')

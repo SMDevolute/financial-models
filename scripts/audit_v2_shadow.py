@@ -182,8 +182,8 @@ for _pass in range(3):
         S['bcap'][i] = S['pcap'][i] + S['icap'][i]
         S['units'][i] = 0.0 if d < sell_from else float(xround(min(
             S['demand'][i], S['scap'][i], S['bcap'][i])))
-        S['ttk_u'][i] = S['units'][i]*mix_t
-        S['cmb_u'][i] = S['units'][i]*mix_c
+        S['ttk_u'][i] = float(xround(S['units'][i]*mix_t))
+        S['cmb_u'][i] = S['units'][i] - S['ttk_u'][i]
         S['ib_close'][i] = ibo + S['units'][i]
 
 ANN = {y: sum(S['units'][k] for k in range(NM) if yr(k) == y) for y in YEARS}

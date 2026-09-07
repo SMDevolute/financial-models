@@ -655,8 +655,9 @@ line(RF, 35, 'Build capacity used', '%',
      annual=lambda a: f'=IFERROR({a}34/{a}31,0)')
 
 bar(RF, 38, 'UNIT SPLIT AND INSTALLED BASE')
-line(RF, 39, 'TTK units', 'units', lambda cl, i: f'={cl}34*{LV("mix_ttk")}')
-line(RF, 40, 'Combi+ units', 'units', lambda cl, i: f'={cl}34*{LV("mix_combi")}')
+line(RF, 39, 'TTK units', 'units', lambda cl, i: f'=ROUND({cl}34*{LV("mix_ttk")},0)',
+     note='whole units, and the Combi+ row takes the remainder so the two add to units sold')
+line(RF, 40, 'Combi+ units', 'units', lambda cl, i: f'={cl}34-{cl}39')
 line(RF, 41, 'Installed base at end of month', 'units',
      lambda cl, i: f'={cl}7+{cl}34', total=True, annual='end')
 

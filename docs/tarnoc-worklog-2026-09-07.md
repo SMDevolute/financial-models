@@ -59,3 +59,29 @@ Fixed by keeping the rate on row 16 (relabelled "Rep hiring rate", and row 19 "P
 Effect on the numbers, all in the base case: 2028 units 1,350 to 1,344, 2030 units 7,418 to 7,407, 2030 revenue EUR126.5m to EUR126.3m. Fewer rep-months means slightly lower cost, so 2027 EBITDA improves from -2.52m to -2.50m and 2028 from +0.84m to +0.86m. Cash low rises from EUR571k to EUR599k, cover from 2.2 to 2.3 months, and the raise used falls from 81% to 80%. Aggressive volumes and cash low are unchanged; 2029 and 2030 EBITDA rise by about EUR30k and EUR50k. The 2028 plus 2029 volume that clears the 5,000 tier is now 5,466 rather than 5,472.
 
 Two stale figures in `docs/tarnoc-v2-summary-2026-09-07.md` were corrected at the same time: partner counts needed by 2029 (67 base and 181 aggressive, not 145 and 260) and aggressive headcount (90 in 2027 and 302 in 2030, not 89 and 289).
+
+## The real problem, and the fix for it
+
+Simon's point was that the half rep should never have reached him, and that he cannot present a model that produces mistakes of that kind. He is right, and the half rep was a symptom.
+
+The audit had four phases: formula errors, an independent shadow model cell by cell, accounting identities, and structure. All four check whether the workbook is internally consistent. None of them asked whether the answer was possible. The shadow model reimplemented the same fractional-hiring logic, so it agreed with the workbook, and the audit passed.
+
+A fifth set of checks was added inside phase 3, called REALITY CHECKS. They test what has to be true of the business whatever the formulas say:
+
+- People, installer partners, partner managers, production lines and units are whole numbers. Every headcount row on Personnel, every unit row on Revenue Forecast and the three volume rows on COGS.
+- Reps in post and partners on the books never fall, because the plan never fires anyone.
+- Cash never goes below zero.
+- Revenue per unit sold stays between EUR5k and EUR40k in any month we sell.
+- Gross margin stays between -100% and 100%.
+- People cost per head stays between EUR2k and EUR20k a month.
+- Tax never exceeds the statutory rate on profit before tax.
+- Share sold direct stays between 0% and 100%.
+- The installed base equals cumulative units sold, because nothing is retired.
+
+Run against the pre-fix workbook (commit `b2b3d8b`) the new phase fails it on seven rows, first month January 2027, which is the behaviour we want. Run against the rebuilt workbooks it passes.
+
+It also found a second defect straight away that nobody had spotted: the TTK and Combi+ split multiplied units by 20% and 80%, so January 2027 sold 4.8 turbineketels and 19.2 Combi+ units. TTK is now rounded and Combi+ takes the remainder, so the two always add to units sold and both are whole. The shadow model was changed to match.
+
+Effect of that second fix, base: 2027 revenue EUR5,995,461 to EUR5,994,199, 2028 EUR22,813,647 to EUR22,812,385, 2030 EUR126.29m to EUR126.28m, 2028 EBITDA EUR858,070 to EUR857,334, cash low EUR599,214 to EUR598,473, cover 2.34 to 2.33 months. Aggressive: 2027 revenue EUR47,610,111 to EUR47,612,635, 2028 EBITDA EUR22,782,769 to EUR22,801,049, cash low unchanged at EUR994,454. Volumes unchanged in both.
+
+All three workbooks rebuilt and passed the full audit, now five phases of checks, 114 of 114 shadow rows agreeing.

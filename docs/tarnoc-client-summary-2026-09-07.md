@@ -97,7 +97,7 @@ one of the three runs out.
 | Lowest cash after the raise | EUR0.60m, Dec 2027 | EUR0.99m, Jan 2027 |
 | Months of cost that covers | 2.3 | 1.4 |
 | Share of the raise the plan uses | 80% | 90% |
-| Cash end 2030 | EUR42.9m | EUR122.6m |
+| Cash end 2030 | EUR42.9m | EUR122.7m |
 
 ---
 
@@ -175,14 +175,20 @@ holding two to three months of cover cannot both hold at EUR10m.
 
 ## 8. What has been checked
 
-Every formula in both workbooks has been checked three ways. The model is
+Every formula in both workbooks has been checked four ways. The model is
 recalculated end to end and compared, cell by cell, against a completely
 separate re-implementation of the same logic written in Python. The balance
 sheet ties in all sixty months. Sources equal uses. Funding received equals the
-funding typed in. Every cross-tab link lands where it should. Two independent
-line-by-line reviews on 7 September found about twenty defects, all of which
-were fixed and re-checked. The 2026 committed plan reconciles to your own model
-to the euro.
+funding typed in. Every cross-tab link lands where it should.
+
+On top of that the audit now tests whether the answers are possible in the real
+world, not only whether the formulas agree with each other. It requires people,
+partners, production lines and units to be whole numbers, headcount never to go
+backwards, cash never to go below zero, revenue per unit to look like the
+product, tax never to exceed the statutory rate, and the installed base to equal
+everything sold. Two independent line-by-line reviews on 7 September found about
+twenty defects, and these reality checks then found two more. All were fixed and
+re-checked. The 2026 committed plan reconciles to your own model to the euro.
 
 The model has no formula errors and no hardcoded results. Change any assumption
 and every number downstream moves.
