@@ -1,3 +1,5 @@
+> The model file was renamed to `models/Tarnoc_v2_2026-09-07.xlsx` on 2026-09-07; references below to the 2026-09-01 filename mean that file.
+
 # Tarnoc, where we got to on 1 September and what is next
 
 ## Two models now exist. Know which is which.

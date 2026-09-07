@@ -1,4 +1,4 @@
-# Independent review — Tarnoc_v2_2026-09-01.xlsx
+# Independent review — Tarnoc_v2_2026-09-07.xlsx
 
 Reviewer: no involvement in the build. Method: every formula on all nine tabs dumped and
 normalised to R1C1 relative form to test that all 60 monthly columns of each row share one

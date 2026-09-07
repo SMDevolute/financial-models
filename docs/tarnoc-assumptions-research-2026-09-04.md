@@ -1,3 +1,5 @@
+> The model file was renamed to `models/Tarnoc_v2_2026-09-07.xlsx` on 2026-09-07; references below to the 2026-09-01 filename mean that file.
+
 # Tarnoc v2: market evidence for the model's assumptions
 
 Date: 2026-09-04. Five research passes (channel, marketing, service, manufacturing, people), each against public Dutch and European sources, all cited by URL in the detailed sections below. Verdicts are on the values in `models/Tarnoc_v2_2026-09-01.xlsx` as of commit `4408009`.

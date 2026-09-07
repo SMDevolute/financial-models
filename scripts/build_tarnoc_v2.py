@@ -18,7 +18,7 @@ Structural differences from the current workbook, all deliberate:
   * capacity and capex follow the assembly-partner to in-house handover
   * headcount is driven by the drivers that create the work, inside Personnel
 
-Output: models/Tarnoc_v2_2026-09-01.xlsx
+Output: models/Tarnoc_v2_2026-09-07.xlsx
 """
 import datetime as dt
 import os
@@ -26,7 +26,7 @@ import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter as gl
 
-OUT = os.environ.get('OUT', 'models/Tarnoc_v2_2026-09-01.xlsx')
+OUT = os.environ.get('OUT', 'models/Tarnoc_v2_2026-09-07.xlsx')
 
 # ---------------------------------------------------------------------------
 # house style, lifted from the existing workbook

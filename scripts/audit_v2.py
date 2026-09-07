@@ -1,7 +1,7 @@
 """
 audit_v2.py -- full correctness audit of the Tarnoc v2 model.
 
-    python3 scripts/audit_v2.py models/Tarnoc_v2_2026-09-01.xlsx
+    python3 scripts/audit_v2.py models/Tarnoc_v2_2026-09-07.xlsx
 
 Four phases, run against a real LibreOffice recalculation, not against openpyxl's
 view of the formulas:

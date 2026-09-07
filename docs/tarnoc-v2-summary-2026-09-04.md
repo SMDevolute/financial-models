@@ -1,7 +1,7 @@
 # Tarnoc v2: how the model works, outcomes, vulnerabilities
 
 Written 2026-09-04 (Friday), for re-reading on Monday 2026-09-07.
-Model: `models/Tarnoc_v2_2026-09-01.xlsx`. Updated 2026-09-07 after the formula review (`docs/tarnoc-v2-formula-review-2026-09-07.md`): ten defects fixed, of which one changed the numbers (per-person overheads, training and recruitment now inflate like every other cost). Figures below are as of that fix. Build: `scripts/build_tarnoc_v2.py`. Check with `python3 scripts/audit_v2.py models/Tarnoc_v2_2026-09-01.xlsx`.
+Model: `models/Tarnoc_v2_2026-09-07.xlsx`. Updated 2026-09-07 after the formula review (`docs/tarnoc-v2-formula-review-2026-09-07.md`): ten defects fixed, of which one changed the numbers (per-person overheads, training and recruitment now inflate like every other cost). Figures below are as of that fix. Build: `scripts/build_tarnoc_v2.py`. Check with `python3 scripts/audit_v2.py models/Tarnoc_v2_2026-09-07.xlsx`.
 Drive copy `Tarnoc_v2_2026-09-03.xlsx` is behind by every change made on 2026-09-04; upload the local file as a new version before sharing.
 
 ## How it works
