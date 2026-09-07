@@ -409,7 +409,7 @@ a_calc('svc_attach', 'Share of the installed base on a contract', '%',
 # ---- demand funnel --------------------------------------------------------
 a_bar('DEMAND  (marketing spend runs the funnel)')
 a_yeartable('mkt', 'Marketing spend', 'EUR/month',
-            [0, 28000, 70000, 120000, 170000],
+            [0, 13000, 35000, 85000, 160000],
             [0, 90000, 190000, 265000, 300000], EUR,
             'fills the demand the installer partners do not bring in themselves; spend more, generate more orders')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
@@ -1268,7 +1268,7 @@ SM.cell(r, 2, 'Months of operating cost that covers').font = f()
 SM.cell(r, 3, '=Dashboard!D53').number_format = NUM1; SM.cell(r, 3).alignment = R
 s_gap()
 s_bar('BOTH CASES SIDE BY SIDE  (typed on 7 September 2026; the table above is live)')
-s_text('Base, EUR3m: 7,400 units and EUR126m revenue in 2030, EBITDA negative until 2030 (EUR18m), 87 people, cash low of -EUR0.25m in December 2029.',
+s_text('Base, EUR3m: 310 units in 2027, 1,100 in 2028, 3,300 in 2029, 7,200 in 2030 (EUR123m revenue). EBITDA negative until 2030 (EUR18m), 84 people, cash low of -EUR1.4m in December 2029.',
        'Aggressive, EUR10m: 15,100 units and EUR259m revenue in 2030, EBITDA positive from 2028 (EUR62m in 2030), 256 people, cash low EUR4.9m in December 2027.',
        'With the BOM priced on two-year volume, base EBITDA turns positive in 2028 and its cash low rises to about EUR1.4m.',
        'Spending 50% more on marketing in 2028-29 takes base volume past 5,000 units in 2029 and swings that year\'s EBITDA from -2.9m to +12.7m.')
@@ -1283,7 +1283,7 @@ s_text('1. BOM cost-down from EUR9,984 to EUR4,998 (50%). Learning-curve evidenc
        '7. Direct share falling to 30% by 2030 needs about 145 active installer partners in 2029, all signed, trained and selling.')
 s_gap()
 s_bar('WHERE THE PLAN IS VULNERABLE')
-s_text('Base on EUR3m runs out of cash at the end of 2029. It needs a bigger raise, the two-year BOM pricing, or the extra marketing push above.',
+s_text('Base on EUR3m runs out of cash during 2028 and is EUR1.4m short at the end of 2029. It needs a raise of about EUR5m, or the two-year BOM pricing.',
        'Both cases lose money per unit until the second BOM tier. Reach it a year late and base runs out of cash; aggressive loses about EUR15m of EBITDA.',
        'Aggressive needs about 60 hires in 2027, a production line and 25 installers signed in the same year. That risk is not in the numbers.',
        'Prices are the client\'s and unchanged. A forced price cut makes the tier-1 margin worse.',

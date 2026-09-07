@@ -25,11 +25,11 @@ Headcount is calculated from drivers: reps and partner managers from the sales p
 
 | | Base | Aggressive |
 | --- | --- | --- |
-| Units 2030 | 7,400 | 15,100 |
-| Revenue 2030 | EUR126m | EUR259m |
+| Units 2027 / 2028 / 2029 / 2030 | 310 / 1,100 / 3,300 / 7,200 | 1,700 / 5,000 / 9,300 / 15,100 |
+| Revenue 2030 | EUR123m | EUR259m |
 | EBITDA | negative until 2030 (EUR18m) | positive from 2028, EUR62m in 2030 |
-| Headcount 2030 | 87 | 256 |
-| Lowest cash after raise | -EUR0.25m, Dec 2029 | EUR4.9m, Dec 2027 |
+| Headcount 2030 | 84 | 256 |
+| Lowest cash after raise | -EUR1.4m, Dec 2029 | EUR4.9m, Dec 2027 |
 
 On the two-year BOM basis, base EBITDA turns positive in 2028 and the cash low rises to about EUR1.4m.
 
@@ -44,7 +44,7 @@ On the two-year BOM basis, base EBITDA turns positive in 2028 and the cash low r
 
 ## Where the model is vulnerable
 
-- Base case on EUR3m runs out of cash: -EUR0.25m at the low point in Dec 2029. It needs a bigger raise, the two-year BOM basis, or the marketing push that takes 2029 volume past 5,000 units (options and their effect are under To do, item 1).
+- Base case on EUR3m runs out of cash during 2028 and is -EUR1.4m at the low point in Dec 2029 (base ramp slowed on 2026-09-07 to 310 / 1,100 / 3,300 / 7,200 units on Simon's instruction). It needs a bigger raise, the two-year BOM basis, or the marketing push that takes 2029 volume past 5,000 units (options and their effect are under To do, item 1).
 - Both cases are loss-making per unit until the second BOM tier. If the tier is reached a year late, base runs out of cash and aggressive loses about EUR15m of cumulative EBITDA.
 - Aggressive needs 60 hires in 2027, a factory line, and 25 installers signed in the same year. The numbers work; the execution risk is not in the model.
 - The client's prices are unchanged from his original model. If the market forces a lower price, gross margin at tier 1 goes further negative.
@@ -53,7 +53,7 @@ On the two-year BOM basis, base EBITDA turns positive in 2028 and the cash low r
 ## To do
 
 Decisions for Simon and the client:
-1. Base raise: on EUR3m the base case goes to -EUR0.25m in Dec 2029. Options tested 2026-09-07: marketing +50% in 2028-29 (2029 volume crosses 5,000, EBITDA 2029 swings from -2.9m to +12.7m, low point EUR1.4m); two-year BOM basis (EBITDA 2028 +3.1m, low EUR1.4m); both plus faster partner signing (low EUR1.8m, uses 1.2m of the 3m). Without one of these the raise needs to be about EUR4.5m.
+1. Base raise: on EUR3m the slowed base case goes to -EUR1.4m in Dec 2029, so a EUR3m raise no longer funds it; about EUR5m does. Options tested 2026-09-07: marketing +50% in 2028-29 (2029 volume crosses 5,000, EBITDA 2029 swings from -2.9m to +12.7m, low point EUR1.4m); two-year BOM basis (EBITDA 2028 +3.1m, low EUR1.4m); both plus faster partner signing (low EUR1.8m, uses 1.2m of the 3m). Without one of these the raise needs to be about EUR4.5m.
 2. Supplier quotes behind the BOM tiers, and whether the supplier will price on a two-year volume commitment (switch E6).
 3. Confirm the installer deal: 10% of unit price on top of the installation fee, or a trade discount if installers buy and resell (research says 20-30% in that case).
 4. Confirm the direct-to-installer path (80/50/35/30% direct). Research says brands that go installer-led usually still hold 40-60% direct in year four.
