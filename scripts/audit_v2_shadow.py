@@ -67,7 +67,6 @@ rep_s = n(live('Reps in post at Jan-2026')); quota = n(live('Quota per rep'))
 ptr_s = n(live('Installer partners at Jan-2026'))
 per_ptr = n(live('Units per partner per month'))
 comm = n(live('Installer partner commission, share of unit price'))
-ptr_margin = n(live('Assembly partner margin on top of its cost'))
 ptr_ord = yearvals('Orders an installer partner brings in per month')
 ptr_pm  = n(live('Partners per partner manager'))
 pcap = n(live('Assembly partner capacity'))
@@ -93,9 +92,7 @@ visits = n(live('Installed units one field engineer can look after'))
 rnd_s = n(live('R&D engineers carried into 2027')); mkt_base = n(live('Marketing team floor'))
 rndadd = yearvals('R&D engineers hired in the year')
 c_rep = n(live('Sales rep')); c_pm = n(live('Partner manager'))
-c_comm = n(live('Trainer, order desk, marketing')); c_ops = n(live('Supply chain and production'))
-asm_save = (ops_line*c_ops + line_run)/lcap*(1+ptr_margin)   # assembly cost inside the BOM, saved in-house
-c_tech = n(live('Field service engineer'))
+c_comm = n(live('Trainer, order desk, marketing')); c_ops = n(live('Supply chain and production'))c_tech = n(live('Field service engineer'))
 c_sup = n(live('Support and escalation')); c_ga = n(live('Leadership and back office'))
 c_rnd = n(live('R&D engineer'))
 fac = n(live('Offices and facilities per person')); it = n(live('IT and software per person'))
@@ -134,7 +131,7 @@ S = {k: [0.0] * NM for k in (
     'spend','ib_open','cpl_eff','leads','sql','demand_f','demand_p','demand','direct','rep_h','rep_hc',
     'dcap','ptr_h','ptr_hc','ccap','scap','pm','pcap','lines','icap','bcap',
     'units','ttk_u','cmb_u','ib_close','r_ttk','r_cmb','r_ups','r_ins','r_svc','r_grant',
-    'r_tot','uy','uny','tkey','c_ttk_u','c_odu_u','c_ttk','c_cmb','c_ups','c_ins','c_svc','u_inh','c_save',
+    'r_tot','uy','uny','tkey','c_ttk_u','c_odu_u','c_ttk','c_cmb','c_ups','c_ins','c_svc',
     'c_comm','c_tot','hc_rep','hc_pm','hc_tr','hc_desk','hc_mkt','hc_sm','hc_sc','hc_op',
     'hc_sup','hc_esc','hc_rnd','hc_core','hc_ops','hc_pay','hc_tech','hc_tot',
     'pc_rnd','pc_sm','pc_ga','pc_tot','o6','o7','o8','o12','o13','o14','o17','o18','o19',
@@ -201,9 +198,7 @@ for i in range(NM):
     S['c_ins'][i] = S['r_ins'][i]
     S['c_svc'][i] = S['ib_open'][i]*svc_c/12
     S['c_comm'][i] = (S['r_ttk'][i]+S['r_cmb'][i])*(1-S['direct'][i])*comm
-    S['u_inh'][i] = min(S['units'][i], S['icap'][i])
-    S['c_save'][i] = -S['u_inh'][i]*asm_save
-    S['c_tot'][i] = sum(S[k][i] for k in ('c_ttk','c_cmb','c_ups','c_ins','c_svc','c_comm','c_save'))
+    S['c_tot'][i] = sum(S[k][i] for k in ('c_ttk','c_cmb','c_ups','c_ins','c_svc','c_comm'))
     S['hc_rep'][i] = S['rep_hc'][i]; S['hc_pm'][i] = S['pm'][i]
     S['hc_tr'][i] = xround(S['ptr_h'][i]*12/ptr_tr)
     S['hc_desk'][i] = xround(S['units'][i]*12/u_desk)
@@ -301,9 +296,8 @@ CHECKS = [
  ('CG units yr',CG,6,'uy'),('CG units next yr',CG,7,'uny'),('CG tier key',CG,8,'tkey'),
  ('CG ttk unit cost',CG,9,'c_ttk_u'),('CG odu unit cost',CG,10,'c_odu_u'),
  ('CG ttk',CG,13,'c_ttk'),('CG cmb',CG,14,'c_cmb'),('CG upsell',CG,15,'c_ups'),
- ('CG in-house units',CG,11,'u_inh'),
  ('CG install',CG,16,'c_ins'),('CG service',CG,17,'c_svc'),('CG commission',CG,18,'c_comm'),
- ('CG assembly saving',CG,19,'c_save'),('CG total',CG,20,'c_tot'),
+ ('CG total',CG,19,'c_tot'),
  ('PE reps',PE,6,'hc_rep'),('PE partner mgrs',PE,7,'hc_pm'),('PE trainers',PE,8,'hc_tr'),
  ('PE order desk',PE,9,'hc_desk'),('PE marketing',PE,10,'hc_mkt'),('PE S&M hc',PE,11,'hc_sm'),
  ('PE supply chain',PE,12,'hc_sc'),('PE operators',PE,13,'hc_op'),

@@ -11,7 +11,7 @@ Monthly, January 2026 to December 2030. Two cases on one switch (Assumptions E5)
 Units sold per month = the lowest of three calculated numbers:
 1. Demand = marketing spend / EUR120 per lead x 50% qualified x 40% won, plus installer partners on the books x orders they bring in themselves (1 a month each in 2027, 4 by 2030).
 2. Selling capacity = reps x 20 units a month, for the direct share of sales; partners x 8 units a month, for the rest. Direct share: 80% in 2027, 50% in 2028, 35% in 2029, 30% in 2030.
-3. Build capacity = assembly partner (650 a month base, 1,000 aggressive) plus 1,000 a month per in-house line once producing. Aggressive has two automated lines from November 2027 and January 2028 (EUR3m each plus EUR3m tooling, paid twelve months ahead); base has none. Units built on own lines save the assembly cost assumed inside the BOM (EUR258 a unit, derived from own line cost plus a 20% partner margin).
+3. Build capacity = assembly partner (650 a month base, 1,000 aggressive) plus 1,000 a month per in-house line once producing. Aggressive has two automated lines from November 2027 and January 2028 (EUR3m each plus EUR3m tooling, paid twelve months ahead); base has none. The BOM is the same whether the partner or an own line builds the unit, so the lines add capacity, not a cost saving (an in-house saving was added and removed on 2026-09-07 at Simon's request).
 
 Revenue = units x price (EUR8,526 turbineketel, EUR13,836 Combi+, 20/80 mix) + upsell + installation (passed straight through to the installer at cost) + service contracts on the installed base (88% attach, EUR60-200 a year).
 
@@ -27,7 +27,7 @@ Headcount is calculated from drivers: reps and partner managers from the sales p
 | --- | --- | --- |
 | Units 2027 / 2028 / 2029 / 2030 | 310 / 1,200 / 3,900 / 7,200 | 2,800 / 6,900 / 11,700 / 18,800 |
 | Revenue 2030 | EUR123m | EUR321m |
-| EBITDA | positive from 2028 (EUR1m, 17m, 34m) | positive from 2027 (EUR5m, 25m, 49m, 85m) |
+| EBITDA | positive from 2028 (EUR1m, 17m, 34m) | positive from 2027 (EUR5m, 23m, 45m, 80m) |
 | Headcount 2030 | 85 | 289 |
 | Lowest cash after raise | EUR0.9m, Dec 2027 (4 months of opex) | EUR1.0m, Jan 2027 (6 weeks of opex; 90% of the raise used) |
 
@@ -46,7 +46,7 @@ Gross margin steps from under 10% to 25% the year two-year volume passes 5,000 u
 
 - Base on EUR3m holds EUR0.9m at its low (Dec 2027). It works only because 2028 plus 2029 volume is 5,100 units, 100 over the 5,000 tier; below that, 2028 costs EUR2,900 more per unit and the case goes negative again. It needs a bigger raise, the two-year BOM basis, or the marketing push that takes 2029 volume past 5,000 units (options and their effect are under To do, item 1).
 - Both cases are loss-making per unit until the second BOM tier. If the tier is reached a year late, base runs out of cash and aggressive loses about EUR15m of cumulative EBITDA.
-- Aggressive spends EUR9m on two lines before the first sale, hires about 75 people in 2027 and signs 36 installers that year. The numbers work; the execution risk is not in the model. The in-house assembly saving rests on a derived number; the client has not said what the partner charges.
+- Aggressive spends EUR9m on two lines before the first sale, hires about 75 people in 2027 and signs 36 installers that year. The numbers work; the execution risk is not in the model. The client has not said what the assembly partner charges per unit, so the model cannot yet give in-house production a cost advantage.
 - The client's prices are unchanged from his original model. If the market forces a lower price, gross margin at tier 1 goes further negative.
 - Service pricing (EUR60/90 a year for the turbineketel) is below the Dutch market. That is upside if raised, but the current numbers understate what is possible.
 

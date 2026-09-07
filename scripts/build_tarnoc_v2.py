@@ -512,14 +512,6 @@ a_single('c_rnd', 'R&D engineer', 'EUR/month', 5700, 5700, EUR,
          note='the blended cost of the engineers already in post')
 a_single('c_tech', 'Field service engineer', 'EUR/month', 6500, 6500, EUR)
 
-a_bar('IN-HOUSE ASSEMBLY  (what building it ourselves saves)')
-a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
-a_single('ptr_margin', 'Assembly partner margin on top of its cost', '%', 0.20, 0.20, PCT,
-         note='what a contract manufacturer adds to its own cost; the only new number in this block')
-a_calc('asm_save', 'Assembly cost inside the BOM, saved on units we build ourselves', 'EUR/unit',
-       f'=({LV("ops_per_line")}*{LV("c_ops")}+{LV("line_run")})/{LV("line_cap")}*(1+{LV("ptr_margin")})', EUR,
-       note='derived from the model: operators plus facility for one line, per unit at full capacity, plus the partner margin. The BOM tiers are partner-built prices, so an in-house unit saves this')
-
 a_bar('OVERHEADS AND OTHER OPERATING COSTS')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
 a_single('fac_fte', 'Offices and facilities per person', 'EUR/month', 700, 700, EUR)
@@ -690,9 +682,6 @@ line(CG, 10, 'Outdoor unit cost per unit', 'EUR/unit',
      lambda cl, i: f'=VLOOKUP({cl}8,Assumptions!$D${BOM_T1}:$F${BOM_T3},3,TRUE)',
      EUR, annual='avg')
 
-line(CG, 11, 'Units built on our own lines', 'units',
-     lambda cl, i: f'=MIN({RFY}!{cl}34,{RFY}!{cl}30)', annual='sum',
-     note='our lines are filled first, the assembly partner takes the rest')
 bar(CG, 12, 'COST OF GOODS SOLD')
 line(CG, 13, 'Turbineketel', 'EUR', lambda cl, i: f'={RFY}!{cl}39*{cl}9', EUR)
 line(CG, 14, 'Combi+', 'EUR',
@@ -707,14 +696,11 @@ line(CG, 17, 'Service delivery', 'EUR',
 line(CG, 18, 'Installer partner commission', 'EUR',
      lambda cl, i: f'=({RFY}!{cl}44+{RFY}!{cl}45)*(1-{RFY}!{cl}15)*{LV("ptr_comm")}', EUR,
      note='turbineketel and Combi+ revenue on the channel share of units, times the commission rate')
-line(CG, 19, 'In-house assembly saving', 'EUR',
-     lambda cl, i: f'=-{cl}11*{LV("asm_save")}', EUR,
-     note='units built on our own lines do not pay the assembly partner; their operators and facility are in OPEX')
-line(CG, 20, 'Total cost of goods sold', 'EUR',
-     lambda cl, i: f'=SUM({cl}13:{cl}19)', EUR, grand=True)
-line(CG, 22, 'Gross profit per unit', 'EUR/unit',
-     lambda cl, i: f'=IFERROR(({RFY}!{cl}50-{RFY}!{cl}49-{cl}20)/{RFY}!{cl}34,0)', EUR, 'ratio',
-     annual=lambda a: f'=IFERROR(({RFY}!{a}50-{RFY}!{a}49-{a}20)/{RFY}!{a}34,0)',
+line(CG, 19, 'Total cost of goods sold', 'EUR',
+     lambda cl, i: f'=SUM({cl}13:{cl}18)', EUR, grand=True)
+line(CG, 21, 'Gross profit per unit', 'EUR/unit',
+     lambda cl, i: f'=IFERROR(({RFY}!{cl}50-{RFY}!{cl}49-{cl}19)/{RFY}!{cl}34,0)', EUR, 'ratio',
+     annual=lambda a: f'=IFERROR(({RFY}!{a}50-{RFY}!{a}49-{a}19)/{RFY}!{a}34,0)',
      note='trading revenue less cost of sales, per unit; the subsidy is left out')
 
 # ===========================================================================
@@ -882,7 +868,7 @@ datebar(FS)
 
 bar(FS, 5, 'PROFIT AND LOSS')
 line(FS, 6, 'Revenue', 'EUR', lambda cl, i: f'={RFY}!{cl}50', EUR, 'link')
-line(FS, 7, 'Cost of goods sold', 'EUR', lambda cl, i: f'=-COGS!{cl}20', EUR, 'link')
+line(FS, 7, 'Cost of goods sold', 'EUR', lambda cl, i: f'=-COGS!{cl}19', EUR, 'link')
 line(FS, 8, 'Gross profit', 'EUR', lambda cl, i: f'={cl}6+{cl}7', EUR, grand=True)
 line(FS, 9, 'Gross margin', '%', lambda cl, i: f'=IFERROR({cl}8/{cl}6,0)', PCT1,
      'ratio', annual=lambda a: f'=IFERROR({a}8/{a}6,0)')
@@ -1277,7 +1263,7 @@ s_bar('HOW UNITS SOLD ARE CALCULATED')
 s_text('Units sold in a month is the lowest of three numbers:',
        '1. Demand: marketing spend / cost per lead x lead-to-qualified x qualified-to-won, plus orders the installer partners bring in themselves.',
        '2. Selling capacity: own reps x quota for the direct share of sales, installer partners x units each for the rest. Direct share falls year by year.',
-       '3. Build capacity: the assembly partner\'s contracted volume, plus 1,000 a month per in-house line once it produces (aggressive case only). Own lines are filled first and save the partner\'s assembly cost.')
+       '3. Build capacity: the assembly partner\'s contracted volume, plus 1,000 a month per in-house line once it produces (aggressive case only).')
 s_gap()
 s_bar('WHAT FOLLOWS FROM UNITS')
 s_text('Revenue: units x price, plus upsell, plus installation passed through to the installer at cost, plus service contracts on the installed base.',
@@ -1310,7 +1296,7 @@ SM.cell(r, 3, '=Dashboard!D39').number_format = EUR; SM.cell(r, 3).font = f(); S
 s_gap()
 s_bar('BOTH CASES SIDE BY SIDE  (typed on 7 September 2026; the table above is live)')
 s_text('Base, EUR3m: 310 units in 2027, 1,200 in 2028, 3,900 in 2029, 7,200 in 2030 (EUR124m revenue). EBITDA positive from 2028 (EUR1m, then 17m, then 34m). Cash low EUR0.9m in December 2027, about four months of cost.',
-       'Aggressive, EUR10m: 2,800 / 6,900 / 11,700 / 18,800 units, EUR321m revenue in 2030, EBITDA positive from 2027 (EUR5m, then 25m, 49m, 85m), 289 people. EUR9m of capex in Nov 2026 and Jan 2027 for two automated lines; cash low EUR1.0m in January 2027, 90% of the raise used.',
+       'Aggressive, EUR10m: 2,800 / 6,900 / 11,700 / 18,800 units, EUR321m revenue in 2030, EBITDA positive from 2027 (EUR5m, then 23m, 45m, 80m), 289 people. EUR9m of capex in Nov 2026 and Jan 2027 for two automated lines; cash low EUR1.0m in January 2027, 90% of the raise used.',
        'Both depend on the supplier pricing the BOM on two-year volume. In base, 2028 plus 2029 volume is 5,100 units, just over the 5,000 tier; 100 units fewer and 2028 costs EUR2,900 more per unit.',
        'The BOM tier is the whole story: the year the two-year volume crosses 5,000 and then 10,000, gross margin steps from under 10% to 25% and then 37%.')
 s_gap()
@@ -1328,14 +1314,14 @@ s_bar('WHERE THE PLAN IS VULNERABLE')
 s_text('Base on EUR3m holds about EUR0.9m at its low point (December 2027), four months of cost. It works, but 2028 profit depends on two-year volume clearing 5,000 units by a margin of about 100.',
        'Both cases lose money per unit until the second BOM tier. Reach it a year late and base runs out of cash; aggressive loses about EUR15m of EBITDA.',
        'Aggressive spends EUR9m on two lines before selling a unit, hires about 75 people in 2027 and signs 36 installers that year. Cash cover at the low point is six weeks. That risk is not in the numbers.',
-       'The in-house saving (EUR258 a unit) is derived from our own line cost plus a 20% partner margin, because nobody has told us what the assembly partner actually charges. If the BOM tiers do not include assembly, the saving is nil.',
+       'In-house lines add capacity and cost (operators, facility, capex) but the BOM is the same whether the partner or our line builds the unit, so the model gives the lines no cost advantage.',
        'Prices are the client\'s and unchanged. A forced price cut makes the tier-1 margin worse.',
        'Turbineketel service prices (EUR60 and EUR90 a year) are below the Dutch market. Upside if raised.')
 s_gap()
 s_bar('STILL NEEDED FROM THE CLIENT')
 s_text('Supplier quotes behind the three BOM tiers, and whether the supplier will price on a two-year volume commitment.',
        'Confirmation of the installer deal: 10% of the unit price on top of the installation fee.',
-       'What the assembly partner charges per unit and whether it is inside the BOM tiers, so the in-house saving can be a real number.',
+       'What the assembly partner charges per unit and whether it is inside the BOM tiers, so building in-house can be given its real saving.',
        'A view on the direct-to-installer shift (80% direct in 2027, 50% in 2028, 30% by 2030) and on the size of the base raise.')
 s_text('')
 _r[0] += 1
