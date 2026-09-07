@@ -19,7 +19,7 @@ Revenue = units x price (EUR8,526 turbineketel, EUR13,836 Combi+, 20/80 mix) + u
 
 Cost of sales = BOM at the volume tier (EUR9,984 below 5,000 units, EUR7,069 from 5,000, EUR4,998 from 10,000) + outdoor unit + shipping + upsell cost + installation + service parts + 10% commission on channel sales. The tier is set on this year plus next year's units, in both cases: a two-year volume commitment to the supplier. The BOM is charged in full on every unit whether the partner or an own line builds it; the lines add capacity, not a cost saving.
 
-Headcount is calculated from drivers: reps and partner managers from the sales plan, support from installed base, supply chain and order desk from units, trainers from partners signed, field engineers at one per 750 units on contract, operators at 25 per running line. R&D hires and the back office are typed per year.
+Headcount is calculated from drivers: reps and partner managers from the sales plan, support from installed base, supply chain and order desk from units, trainers from partners signed, field engineers at one per 600 units on contract, operators at 25 per running line. R&D hires and the back office are typed per year.
 
 Working capital: DSO 20, DPO 45, no inventory (the client's figures). Wages +5% a year, other costs +10%.
 
@@ -27,14 +27,14 @@ Working capital: DSO 20, DPO 45, no inventory (the client's figures). Wages +5% 
 
 | | Base, EUR3m | Aggressive, EUR10m |
 | --- | --- | --- |
-| Units 2027 / 2028 / 2029 / 2030 | 310 / 1,200 / 3,900 / 7,200 | 2,800 / 6,900 / 11,700 / 18,800 |
-| Revenue 2030 | EUR123m | EUR321m |
+| Units 2027 / 2028 / 2029 / 2030 | 350 / 1,350 / 4,100 / 7,400 | 2,800 / 6,900 / 11,700 / 18,800 |
+| Revenue 2030 | EUR127m | EUR321m |
 | Gross margin 2027 / 2028 / 2029 / 2030 | 10% / 25% / 37% / 37% | 28% / 38% / 37% / 37% |
-| EBITDA 2027 / 2028 / 2029 / 2030 | -2.1m / +1.0m / +17m / +34m | +4.8m / +23m / +45m / +80m |
-| Headcount end 2030 | 85 | 289 |
-| Cash low after the raise | EUR0.9m, Dec 2027, about 4 months of opex | EUR1.0m, Jan 2027, about 6 weeks of opex |
-| Share of the raise used | 69% | 90% |
-| Cash end 2030 | EUR43m | EUR131m |
+| EBITDA 2027 / 2028 / 2029 / 2030 | -2.5m / +0.8m / +18m / +34m | +4.8m / +23m / +45m / +79m |
+| Headcount end 2030 | 95 | 301 |
+| Cash low after the raise | EUR0.6m, Dec 2027, about 2 months of opex | EUR1.0m, Jan 2027, about 6 weeks of opex |
+| Share of the raise used | 81% | 90% |
+| Cash end 2030 | EUR43m | EUR123m |
 
 Gross margin steps from about 10% to 25% the year two-year volume passes 5,000 units, and to 37% past 10,000. In base that happens in 2028 and 2029; in aggressive in 2027 and 2028.
 
@@ -47,7 +47,7 @@ Commercially, it holds together on one condition and has three soft spots.
 The condition: the supplier prices the BOM on two-year volume. Without that, 2027 and 2028 are priced at EUR9,984 a unit, both cases lose a year of margin, and base does not close on EUR3m.
 
 The soft spots:
-1. Base turns on about 100 units. 2028 plus 2029 volume is 5,100, just over the 5,000 tier. At 4,900, 2028 costs EUR2,900 more per unit, EBITDA 2028 goes back to about -2.7m and cash below zero.
+1. Base turns on about 500 units. 2028 plus 2029 volume is 5,500 against the 5,000 tier. Below it, 2028 costs EUR2,900 more per unit, EBITDA 2028 goes back to about -3m and cash below zero.
 2. Aggressive spends EUR9m on lines that, as modelled, save nothing. The BOM is the same whichever line builds the unit, so the lines cost operators, facility and capex for capacity the plan barely uses until 2030. The investor question is "why build" and the answer has to be strategic (control, quality, independence from one partner) or a partner fee the client has not yet told us.
 3. Aggressive is profitable in its first selling year (EUR4.8m in 2027 on 2,800 units) because two-year volume puts 2027 straight into the second BOM tier. That is what the arithmetic says; it is also the kind of first year an investor will not believe without the supplier contract in hand.
 
@@ -64,7 +64,7 @@ The soft spots:
 
 ## Where the plan is vulnerable
 
-- Base: the 5,000-unit cliff in 2028. A delay of one quarter in the 2029 ramp is enough to miss it.
+- Base: the 5,000-unit cliff in 2028 and two months of cash cover in December 2027. Base now hires 4 and 3 R&D engineers in 2027-28, signs 1 partner a month in 2027, hires 0.5 reps a month in 2027 and runs one field engineer per 600 units (81% of the raise used, Simon's instruction of 2026-09-07).
 - Aggressive: six weeks of cash cover in January 2027 after EUR9m of capex, with the first unit sold that same month. Any slip in the raise, the lines or the launch and the plan needs more money. Simon asked for both 90% use of the raise and 2-3 months of cover; at EUR10m only one can hold.
 - Both: the turbineketel sells below its tier-1 BOM. A forced price cut makes the first tier worse.
 - Service prices for the turbineketel (EUR60 and EUR90 a year) sit below the Dutch market. Upside if raised.

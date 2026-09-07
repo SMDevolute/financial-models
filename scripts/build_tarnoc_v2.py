@@ -1300,16 +1300,16 @@ SM.cell(r, 2, 'Lowest cash before the raise').font = f()
 SM.cell(r, 3, '=Dashboard!D39').number_format = EUR; SM.cell(r, 3).font = f(); SM.cell(r, 3).alignment = R
 s_gap()
 s_bar('BOTH CASES SIDE BY SIDE  (typed on 7 September 2026; the table above is live)')
-s_text('Base, EUR3m: 310 / 1,200 / 3,900 / 7,200 units in 2027 to 2030, EUR123m revenue in 2030. Gross margin 10%, 25%, 37%, 37%. EBITDA -2.1m, +1.0m, +17m, +34m. 85 people.',
-       '     Cash low EUR0.9m in December 2027, about four months of cost; 69% of the raise used.',
-       'Aggressive, EUR10m: 2,800 / 6,900 / 11,700 / 18,800 units, EUR321m revenue in 2030. Gross margin 28%, 38%, 37%, 37%. EBITDA +4.8m, +23m, +45m, +80m. 289 people.',
+s_text('Base, EUR3m: 350 / 1,350 / 4,100 / 7,400 units in 2027 to 2030, EUR127m revenue in 2030. Gross margin 10%, 25%, 37%, 37%. EBITDA -2.5m, +0.8m, +18m, +34m. 95 people.',
+       '     Cash low EUR0.6m in December 2027, about two months of cost; 81% of the raise used.',
+       'Aggressive, EUR10m: 2,800 / 6,900 / 11,700 / 18,800 units, EUR321m revenue in 2030. Gross margin 28%, 38%, 37%, 37%. EBITDA +4.8m, +23m, +45m, +79m. 301 people.',
        '     EUR9m of capex in Nov 2026 and Jan 2027 for two automated lines. Cash low EUR1.0m in January 2027, six weeks of cost; 90% of the raise used.',
        'Gross margin steps from about 10% to 25% the year two-year volume passes 5,000 units, and to 37% past 10,000. Base: 2028 and 2029. Aggressive: 2027 and 2028.')
 s_gap()
 s_bar('DOES IT MAKE SENSE')
 s_text('Mechanically, yes. Both cases pass the full audit: no formula errors, balance sheet ties every month, funding received equals the inputs, 116 rows agree with an independent re-implementation.',
        'Commercially it holds on one condition: the supplier prices the BOM on two-year volume. Without that, 2027 and 2028 are priced at EUR9,984 a unit and base does not close on EUR3m.',
-       'Soft spot 1. Base turns on about 100 units: 2028 plus 2029 volume is 5,100 against a 5,000 tier. At 4,900, 2028 costs EUR2,900 more per unit and EBITDA goes back to about -2.7m.',
+       'Soft spot 1. Base turns on about 500 units: 2028 plus 2029 volume is 5,500 against a 5,000 tier. Below 5,000, 2028 costs EUR2,900 more per unit and EBITDA goes back to about -3m.',
        'Soft spot 2. Aggressive spends EUR9m on lines that, as modelled, save nothing. The answer to "why build" has to be strategic, or a partner fee the client has not given us.',
        'Soft spot 3. Aggressive is profitable in its first selling year because two-year volume puts 2027 straight into the second tier. An investor will want the supplier contract before believing it.')
 s_gap()
@@ -1364,7 +1364,7 @@ s_gap()
 s_text('The research briefs described the product as a gas boiler; it is a turbine heat pump. That weakens the "high" verdicts on the close rate and price, and does not affect the rest.')
 s_gap()
 s_bar('WHERE THE PLAN IS VULNERABLE')
-s_text('Base: the 5,000-unit cliff in 2028. A one-quarter delay in the 2029 ramp is enough to miss it, and with it the year\'s margin step.',
+s_text('Base: the 5,000-unit cliff in 2028 (2028 plus 2029 volume is 5,500 against the 5,000 tier) and two months of cash cover in December 2027. A one-quarter delay in the 2029 ramp costs the margin step.',
        'Aggressive: six weeks of cash cover in January 2027 after EUR9m of capex, with the first unit sold that month. 90% use of the raise and 2-3 months of cover cannot both hold at EUR10m.',
        'Both: the turbineketel sells below its tier-1 BOM. A forced price cut makes the first tier worse.',
        'Aggressive headcount: 16 to 89 people in 2027 and 36 installers signed the same year. That risk is not in the numbers.',
