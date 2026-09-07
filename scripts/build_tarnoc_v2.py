@@ -405,7 +405,7 @@ a_calc('svc_attach', 'Share of the installed base on a contract', '%',
 a_bar('DEMAND  (marketing spend runs the funnel)')
 a_yeartable('mkt', 'Marketing spend', 'EUR/month',
             [0, 13000, 40000, 115000, 160000],
-            [0, 90000, 190000, 265000, 300000], EUR,
+            [0, 150000, 260000, 330000, 380000], EUR,
             'generates orders through the funnel, on top of the orders installer partners bring in; nil before the first sellable month')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
 a_single('cpl', 'Cost per lead', 'EUR', 120, 120, EUR,
@@ -422,11 +422,11 @@ a_yeartable('direct', 'Share of units sold direct', '%',
             'direct to consumer first, installers brought in from 2027, half the volume by 2028 and installer-led from 2029')
 a_yeartable('rep_add', 'Reps hired per month', 'FTE/month',
             [0.0, 0.25, 0.25, 0.25, 0.25],
-            [0.0, 1.00, 0.75, 0.25, 0.25], NUM2,
+            [0.0, 2.00, 1.00, 0.50, 0.25], NUM2,
             'sales hiring starts in the first month we can sell, so 2026 is nil')
 a_yeartable('ptr_add', 'Installer partners signed per month', 'partners/month',
             [0.0, 0.5, 1.5, 3.0, 3.8],
-            [0.0, 2.0, 4.0, 6.0, 7.0], NUM1,
+            [0.0, 3.0, 5.0, 7.0, 8.0], NUM1,
             'same gate: no partner intros before the first month we can sell; the network takes time to build')
 a_yeartable('ptr_orders', 'Orders an installer partner brings in per month', 'units/month',
             [0, 1, 2, 3, 4],
@@ -453,15 +453,18 @@ a_single('line1', 'In-house line 1 producing from', 'date',
          dt.datetime(2035, 1, 1), dt.datetime(2027, 11, 1), DATE_FMT,
          'base: set well past the horizon to mean never. Aggressive: paid for in November 2026, the first month after the raise lands')
 a_single('line2', 'In-house line 2 producing from', 'date',
-         dt.datetime(2035, 1, 1), dt.datetime(2029, 7, 1), DATE_FMT)
+         dt.datetime(2035, 1, 1), dt.datetime(2028, 1, 1), DATE_FMT,
+         'aggressive: paid for in January 2027, so both lines run from early 2028 and most volume is built in-house')
 a_single('line_cap', 'Capacity per in-house line', 'units/month', 1000, 1000)
-a_single('line_capex', 'Capex per in-house line', 'EUR', 2500000, 2500000, EUR)
+a_single('line_capex', 'Capex per in-house line', 'EUR', 3000000, 3000000, EUR,
+         note='EUR250 per unit of annual capacity; peers run EUR250 to 600')
 a_single('tool_capex', 'Tooling and automation, one-off with line 1', 'EUR',
-         1000000, 1000000, EUR)
+         3000000, 3000000, EUR,
+         note='automated test, balancing and handling, which is why a line runs on 25 operators rather than 35')
 a_single('lead_m', 'Months from paying for a line to it producing', 'months', 12, 12,
          note='this lag is why the raise has to land before the volume does')
-a_single('ops_per_line', 'Production operators per live line', 'FTE', 35, 35,
-         note='assembly, balancing, leak test, run-in and electrical test')
+a_single('ops_per_line', 'Production operators per live line', 'FTE', 25, 25,
+         note='assembly, balancing, leak test, run-in and electrical test, with the automation above; Intergas and Remeha run leaner still')
 a_single('line_run', 'Facility and maintenance per live line', 'EUR/month',
          90000, 90000, EUR, 'the building and the machines, not the people')
 a_single('dep_life', 'Depreciation life, straight line', 'years', 8, 8)
@@ -479,7 +482,7 @@ a_single('ship_combi', 'Inbound shipping, Combi+ outdoor unit', 'EUR/unit', 100,
 # ---- organisation ---------------------------------------------------------
 a_bar('ORGANISATION  (headcount follows whatever creates the work)')
 a_yeartable('rnd_add', 'R&D engineers hired in the year', 'FTE',
-            [0, 2, 2, 3, 4], [0, 5, 13, 14, 14], NUM,
+            [0, 2, 2, 3, 4], [0, 10, 16, 16, 16], NUM,
             'a novel turbine machine plus the Twincycle needs engineers, not a fixed team')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
 a_single('rnd_start', 'R&D engineers in post at Jan-2026', 'FTE', 10, 10,
@@ -508,6 +511,14 @@ a_single('c_ga', 'Leadership and back office', 'EUR/month', 7000, 7000, EUR)
 a_single('c_rnd', 'R&D engineer', 'EUR/month', 5700, 5700, EUR,
          note='the blended cost of the engineers already in post')
 a_single('c_tech', 'Field service engineer', 'EUR/month', 6500, 6500, EUR)
+
+a_bar('IN-HOUSE ASSEMBLY  (what building it ourselves saves)')
+a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
+a_single('ptr_margin', 'Assembly partner margin on top of its cost', '%', 0.20, 0.20, PCT,
+         note='what a contract manufacturer adds to its own cost; the only new number in this block')
+a_calc('asm_save', 'Assembly cost inside the BOM, saved on units we build ourselves', 'EUR/unit',
+       f'=({LV("ops_per_line")}*{LV("c_ops")}+{LV("line_run")})/{LV("line_cap")}*(1+{LV("ptr_margin")})', EUR,
+       note='derived from the model: operators plus facility for one line, per unit at full capacity, plus the partner margin. The BOM tiers are partner-built prices, so an in-house unit saves this')
 
 a_bar('OVERHEADS AND OTHER OPERATING COSTS')
 a_head([('D', 'Base'), ('E', 'Aggressive'), ('F', 'Live')])
@@ -679,6 +690,9 @@ line(CG, 10, 'Outdoor unit cost per unit', 'EUR/unit',
      lambda cl, i: f'=VLOOKUP({cl}8,Assumptions!$D${BOM_T1}:$F${BOM_T3},3,TRUE)',
      EUR, annual='avg')
 
+line(CG, 11, 'Units built on our own lines', 'units',
+     lambda cl, i: f'=MIN({RFY}!{cl}34,{RFY}!{cl}30)', annual='sum',
+     note='our lines are filled first, the assembly partner takes the rest')
 bar(CG, 12, 'COST OF GOODS SOLD')
 line(CG, 13, 'Turbineketel', 'EUR', lambda cl, i: f'={RFY}!{cl}39*{cl}9', EUR)
 line(CG, 14, 'Combi+', 'EUR',
@@ -693,11 +707,14 @@ line(CG, 17, 'Service delivery', 'EUR',
 line(CG, 18, 'Installer partner commission', 'EUR',
      lambda cl, i: f'=({RFY}!{cl}44+{RFY}!{cl}45)*(1-{RFY}!{cl}15)*{LV("ptr_comm")}', EUR,
      note='turbineketel and Combi+ revenue on the channel share of units, times the commission rate')
-line(CG, 19, 'Total cost of goods sold', 'EUR',
-     lambda cl, i: f'=SUM({cl}13:{cl}18)', EUR, grand=True)
-line(CG, 21, 'Gross profit per unit', 'EUR/unit',
-     lambda cl, i: f'=IFERROR(({RFY}!{cl}50-{RFY}!{cl}49-{cl}19)/{RFY}!{cl}34,0)', EUR, 'ratio',
-     annual=lambda a: f'=IFERROR(({RFY}!{a}50-{RFY}!{a}49-{a}19)/{RFY}!{a}34,0)',
+line(CG, 19, 'In-house assembly saving', 'EUR',
+     lambda cl, i: f'=-{cl}11*{LV("asm_save")}', EUR,
+     note='units built on our own lines do not pay the assembly partner; their operators and facility are in OPEX')
+line(CG, 20, 'Total cost of goods sold', 'EUR',
+     lambda cl, i: f'=SUM({cl}13:{cl}19)', EUR, grand=True)
+line(CG, 22, 'Gross profit per unit', 'EUR/unit',
+     lambda cl, i: f'=IFERROR(({RFY}!{cl}50-{RFY}!{cl}49-{cl}20)/{RFY}!{cl}34,0)', EUR, 'ratio',
+     annual=lambda a: f'=IFERROR(({RFY}!{a}50-{RFY}!{a}49-{a}20)/{RFY}!{a}34,0)',
      note='trading revenue less cost of sales, per unit; the subsidy is left out')
 
 # ===========================================================================
@@ -865,7 +882,7 @@ datebar(FS)
 
 bar(FS, 5, 'PROFIT AND LOSS')
 line(FS, 6, 'Revenue', 'EUR', lambda cl, i: f'={RFY}!{cl}50', EUR, 'link')
-line(FS, 7, 'Cost of goods sold', 'EUR', lambda cl, i: f'=-COGS!{cl}19', EUR, 'link')
+line(FS, 7, 'Cost of goods sold', 'EUR', lambda cl, i: f'=-COGS!{cl}20', EUR, 'link')
 line(FS, 8, 'Gross profit', 'EUR', lambda cl, i: f'={cl}6+{cl}7', EUR, grand=True)
 line(FS, 9, 'Gross margin', '%', lambda cl, i: f'=IFERROR({cl}8/{cl}6,0)', PCT1,
      'ratio', annual=lambda a: f'=IFERROR({a}8/{a}6,0)')
@@ -1260,7 +1277,7 @@ s_bar('HOW UNITS SOLD ARE CALCULATED')
 s_text('Units sold in a month is the lowest of three numbers:',
        '1. Demand: marketing spend / cost per lead x lead-to-qualified x qualified-to-won, plus orders the installer partners bring in themselves.',
        '2. Selling capacity: own reps x quota for the direct share of sales, installer partners x units each for the rest. Direct share falls year by year.',
-       '3. Build capacity: the assembly partner\'s contracted volume, plus 1,000 a month per in-house line once it produces (aggressive case only).')
+       '3. Build capacity: the assembly partner\'s contracted volume, plus 1,000 a month per in-house line once it produces (aggressive case only). Own lines are filled first and save the partner\'s assembly cost.')
 s_gap()
 s_bar('WHAT FOLLOWS FROM UNITS')
 s_text('Revenue: units x price, plus upsell, plus installation passed through to the installer at cost, plus service contracts on the installed base.',
@@ -1293,7 +1310,7 @@ SM.cell(r, 3, '=Dashboard!D39').number_format = EUR; SM.cell(r, 3).font = f(); S
 s_gap()
 s_bar('BOTH CASES SIDE BY SIDE  (typed on 7 September 2026; the table above is live)')
 s_text('Base, EUR3m: 310 units in 2027, 1,200 in 2028, 3,900 in 2029, 7,200 in 2030 (EUR124m revenue). EBITDA positive from 2028 (EUR1m, then 17m, then 34m). Cash low EUR0.9m in December 2027, about four months of cost.',
-       'Aggressive, EUR10m: 1,700 / 5,000 / 9,300 / 15,100 units, EUR259m revenue in 2030, EBITDA positive from 2027 (EUR62m in 2030), 256 people. Cash never falls below the EUR6.2m it holds after the raise.',
+       'Aggressive, EUR10m: 2,800 / 6,900 / 11,700 / 18,800 units, EUR321m revenue in 2030, EBITDA positive from 2027 (EUR5m, then 25m, 49m, 85m), 289 people. EUR9m of capex in Nov 2026 and Jan 2027 for two automated lines; cash low EUR1.0m in January 2027, 90% of the raise used.',
        'Both depend on the supplier pricing the BOM on two-year volume. In base, 2028 plus 2029 volume is 5,100 units, just over the 5,000 tier; 100 units fewer and 2028 costs EUR2,900 more per unit.',
        'The BOM tier is the whole story: the year the two-year volume crosses 5,000 and then 10,000, gross margin steps from under 10% to 25% and then 37%.')
 s_gap()
@@ -1310,13 +1327,15 @@ s_gap()
 s_bar('WHERE THE PLAN IS VULNERABLE')
 s_text('Base on EUR3m holds about EUR0.9m at its low point (December 2027), four months of cost. It works, but 2028 profit depends on two-year volume clearing 5,000 units by a margin of about 100.',
        'Both cases lose money per unit until the second BOM tier. Reach it a year late and base runs out of cash; aggressive loses about EUR15m of EBITDA.',
-       'Aggressive needs about 60 hires in 2027, a production line and 25 installers signed in the same year. That risk is not in the numbers.',
+       'Aggressive spends EUR9m on two lines before selling a unit, hires about 75 people in 2027 and signs 36 installers that year. Cash cover at the low point is six weeks. That risk is not in the numbers.',
+       'The in-house saving (EUR258 a unit) is derived from our own line cost plus a 20% partner margin, because nobody has told us what the assembly partner actually charges. If the BOM tiers do not include assembly, the saving is nil.',
        'Prices are the client\'s and unchanged. A forced price cut makes the tier-1 margin worse.',
        'Turbineketel service prices (EUR60 and EUR90 a year) are below the Dutch market. Upside if raised.')
 s_gap()
 s_bar('STILL NEEDED FROM THE CLIENT')
 s_text('Supplier quotes behind the three BOM tiers, and whether the supplier will price on a two-year volume commitment.',
        'Confirmation of the installer deal: 10% of the unit price on top of the installation fee.',
+       'What the assembly partner charges per unit and whether it is inside the BOM tiers, so the in-house saving can be a real number.',
        'A view on the direct-to-installer shift (80% direct in 2027, 50% in 2028, 30% by 2030) and on the size of the base raise.')
 s_text('')
 _r[0] += 1
