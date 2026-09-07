@@ -1,7 +1,7 @@
 # Tarnoc v2: how the model works, outcomes, vulnerabilities
 
 Written 2026-09-04 (Friday), for re-reading on Monday 2026-09-07.
-Model: `models/Tarnoc_v2_2026-09-01.xlsx` at commit `c4f4c96`. Build: `scripts/build_tarnoc_v2.py`. Check with `python3 scripts/audit_v2.py models/Tarnoc_v2_2026-09-01.xlsx`.
+Model: `models/Tarnoc_v2_2026-09-01.xlsx`. Updated 2026-09-07 after the formula review (`docs/tarnoc-v2-formula-review-2026-09-07.md`): ten defects fixed, of which one changed the numbers (per-person overheads, training and recruitment now inflate like every other cost). Figures below are as of that fix. Build: `scripts/build_tarnoc_v2.py`. Check with `python3 scripts/audit_v2.py models/Tarnoc_v2_2026-09-01.xlsx`.
 Drive copy `Tarnoc_v2_2026-09-03.xlsx` is behind by every change made on 2026-09-04; upload the local file as a new version before sharing.
 
 ## How it works
@@ -27,9 +27,9 @@ Headcount is calculated from drivers: reps and partner managers from the sales p
 | --- | --- | --- |
 | Units 2030 | 7,400 | 15,100 |
 | Revenue 2030 | EUR126m | EUR259m |
-| EBITDA | negative until 2030 (EUR19m) | positive from 2028, EUR64m in 2030 |
+| EBITDA | negative until 2030 (EUR18m) | positive from 2028, EUR62m in 2030 |
 | Headcount 2030 | 87 | 256 |
-| Lowest cash after raise | EUR0.3m, Dec 2029 | EUR5.1m, Dec 2027 |
+| Lowest cash after raise | -EUR0.25m, Dec 2029 | EUR4.9m, Dec 2027 |
 
 On the two-year BOM basis, base EBITDA turns positive in 2028 and the cash low rises to about EUR1.4m.
 
@@ -44,7 +44,7 @@ On the two-year BOM basis, base EBITDA turns positive in 2028 and the cash low r
 
 ## Where the model is vulnerable
 
-- Base case on EUR3m has no margin for error: 0.4 months of costs at the low point. Any slip in volume, cost-down or timing puts it below zero.
+- Base case on EUR3m runs out of cash: -EUR0.25m at the low point in Dec 2029. It needs a bigger raise, the two-year BOM basis, or the marketing push that takes 2029 volume past 5,000 units (see the 2026-09-07 scenario table in the conversation notes below).
 - Both cases are loss-making per unit until the second BOM tier. If the tier is reached a year late, base runs out of cash and aggressive loses about EUR15m of cumulative EBITDA.
 - Aggressive needs 60 hires in 2027, a factory line, and 25 installers signed in the same year. The numbers work; the execution risk is not in the model.
 - The client's prices are unchanged from his original model. If the market forces a lower price, gross margin at tier 1 goes further negative.
@@ -53,7 +53,7 @@ On the two-year BOM basis, base EBITDA turns positive in 2028 and the cash low r
 ## To do
 
 Decisions for Simon and the client:
-1. Base raise: EUR3m gives 0.4 months of cover at the low point. Raise more (about EUR4.3m gives 2-3 months), hire slower, or accept it knowingly.
+1. Base raise: on EUR3m the base case goes to -EUR0.25m in Dec 2029. Options tested 2026-09-07: marketing +50% in 2028-29 (2029 volume crosses 5,000, EBITDA 2029 swings from -2.9m to +12.7m, low point EUR1.4m); two-year BOM basis (EBITDA 2028 +3.1m, low EUR1.4m); both plus faster partner signing (low EUR1.8m, uses 1.2m of the 3m). Without one of these the raise needs to be about EUR4.5m.
 2. Supplier quotes behind the BOM tiers, and whether the supplier will price on a two-year volume commitment (switch E6).
 3. Confirm the installer deal: 10% of unit price on top of the installation fee, or a trade discount if installers buy and resell (research says 20-30% in that case).
 4. Confirm the direct-to-installer path (80/50/35/30% direct). Research says brands that go installer-led usually still hold 40-60% direct in year four.

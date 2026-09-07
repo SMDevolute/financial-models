@@ -171,6 +171,10 @@ def line(ws, row, lbl, unit, fn, fmt=NUM, kind='formula', total=False,
             v = f'=IFERROR(AVERAGE({ms[0]}{row}:{ms[-1]}{row}),0)'
         elif annual == 'min':
             v = f'=MIN({ms[0]}{row}:{ms[-1]}{row})'
+        elif annual == 'start':
+            v = f'={ms[0]}{row}'
+        elif callable(annual):
+            v = annual(cl)          # ratios: recomputed from the annual totals, never averaged
         else:
             v = None
         if v is None:
@@ -329,7 +333,7 @@ a_single('open_cash', 'Opening cash at Jan-2026', 'EUR', 853120, 853120, EUR,
 a_single('sal_infl', 'Annual salary increase', '%', 0.05, 0.05, PCT)
 a_single('tax', 'Corporate income tax rate', '%', 0.258, 0.258, PCT,
          'losses are carried forward until profits absorb them')
-a_single('loan_rate', 'Interest on the working capital loan', '%', 0.05, 0.05, PCT)
+a_single('loan_rate', 'Interest on the convertible loan', '%', 0.05, 0.05, PCT)
 
 a_single('sell_from', 'First month we can sell', 'date',
          dt.datetime(2027, 1, 1), dt.datetime(2027, 1, 1), DATE_FMT,
@@ -596,7 +600,8 @@ line(RF, 22, 'Selling capacity', 'units/mo',
 line(RF, 23, 'Partner managers needed', 'FTE',
      lambda cl, i: f'=ROUND({cl}20/{LV("ptr_per_pm")},0)', annual='end')
 line(RF, 24, 'Selling capacity used', '%',
-     lambda cl, i: f'=IFERROR({cl}34/{cl}22,0)', PCT, 'ratio', annual='avg')
+     lambda cl, i: f'=IFERROR({cl}34/{cl}22,0)', PCT, 'ratio',
+     annual=lambda a: f'=IFERROR({a}34/{a}22,0)')
 
 bar(RF, 27, 'BUILD CAPACITY')
 line(RF, 28, 'Assembly partner', 'units/mo', lambda cl, i: f'={LV("partner_cap")}',
@@ -613,7 +618,8 @@ line(RF, 34, 'Units sold', 'units',
                     f'ROUND(MIN({cl}12,{cl}22,{cl}31),0))'), grand=True,
      note='nil until the first month we can sell, then the smallest of demand, selling and build capacity')
 line(RF, 35, 'Build capacity used', '%',
-     lambda cl, i: f'=IFERROR({cl}34/{cl}31,0)', PCT, 'ratio', annual='avg')
+     lambda cl, i: f'=IFERROR({cl}34/{cl}31,0)', PCT, 'ratio',
+     annual=lambda a: f'=IFERROR({a}34/{a}31,0)')
 
 bar(RF, 38, 'UNIT SPLIT AND INSTALLED BASE')
 line(RF, 39, 'TTK units', 'units', lambda cl, i: f'={cl}34*{LV("mix_ttk")}')
@@ -636,7 +642,8 @@ line(RF, 49, 'Subsidies and grants', 'EUR',
      note='the 2026 subsidy already in the committed plan')
 line(RF, 50, 'Total revenue', 'EUR', lambda cl, i: f'=SUM({cl}44:{cl}49)', EUR, grand=True)
 line(RF, 51, 'Revenue per unit', 'EUR/unit',
-     lambda cl, i: f'=IFERROR(({cl}50-{cl}49)/{cl}34,0)', EUR, 'ratio', annual='avg')
+     lambda cl, i: f'=IFERROR(({cl}50-{cl}49)/{cl}34,0)', EUR, 'ratio',
+     annual=lambda a: f'=IFERROR(({a}50-{a}49)/{a}34,0)')
 print('revenue forecast written')
 
 def pv(i):
@@ -692,7 +699,7 @@ line(CG, 19, 'Total cost of goods sold', 'EUR',
      lambda cl, i: f'=SUM({cl}13:{cl}18)', EUR, grand=True)
 line(CG, 21, 'Gross profit per unit', 'EUR/unit',
      lambda cl, i: f'=IFERROR(({RFY}!{cl}50-{cl}19)/{RFY}!{cl}34,0)', EUR, 'ratio',
-     annual='avg')
+     annual=lambda a: f'=IFERROR(({RFY}!{a}50-{a}19)/{RFY}!{a}34,0)')
 
 # ===========================================================================
 # PERSONNEL
@@ -757,7 +764,9 @@ line(PE, 28, 'General and administrative', 'EUR/mo',
 line(PE, 29, 'Total people cost', 'EUR/mo', lambda cl, i: f'=SUM({cl}26:{cl}28)',
      EUR, total=True)
 line(PE, 31, 'Average cost per person', 'EUR/mo',
-     lambda cl, i: f'=IFERROR({cl}29/{cl}20,0)', EUR, 'ratio', annual='avg')
+     lambda cl, i: f'=IFERROR({cl}29/{cl}20,0)', EUR, 'ratio',
+     annual=lambda a: f'=IFERROR({a}29/12/{a}20,0)',
+     note='annual column: the year\'s people cost over twelve, per head at December')
 print('cogs and personnel written')
 
 # ===========================================================================
@@ -785,9 +794,12 @@ FROZEN = {
          [20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000]),
 }
 bar(OP, 37, 'COMMITTED 2026 PLAN, HELD FIXED  (January to October, from the existing model)')
+from openpyxl.styles import PatternFill as _PF
 for r, (lbl, vals) in FROZEN.items():
-    line(OP, r, lbl, 'EUR', lambda cl, i, v=vals: (v[i] if i < 10 else 0), EUR, 'input',
+    line(OP, r, lbl, 'EUR', lambda cl, i, v=vals: (v[i] if i < 10 else None), EUR, 'input',
          note=('taken from the existing model and not recalculated' if r == 38 else None))
+    for i in range(10, NM):               # after October 2026 these cells are empty, not inputs
+        OP[f'{MC[i]}{r}'].fill = _PF()
 OP[f'{NOTE}44'] = ('these ten months are committed. The drivers take over from November, '
                    'the month after the raise lands.')
 OP[f'{NOTE}44'].font = f(italic=True, color=GREY, size=9, name=NOTE_FONT)
@@ -805,7 +817,7 @@ bar(OP, 11, 'SALES AND MARKETING, EVERYTHING ELSE')
 line(OP, 12, 'Performance marketing', 'EUR', lambda cl, i: f'={RFY}!{cl}6', EUR, 'link',
      note='the same spend that drives the funnel, so it can never be double counted')
 line(OP, 13, 'Installer training and demo units', 'EUR',
-     lambda cl, i: f'={RFY}!{cl}19*{LV("enable")}', EUR)
+     lambda cl, i: f'={RFY}!{cl}19*' + infl(cl, 'enable'), EUR)
 line(OP, 14, 'Total', 'EUR',
      lambda cl, i: f'=IF({cl}$3<={LV("freeze_to")},{cl}42,SUM({cl}12:{cl}13))', EUR, total=True)
 
@@ -819,11 +831,11 @@ line(OP, 19, 'Total', 'EUR',
 bar(OP, 21, 'GENERAL AND ADMINISTRATIVE, EVERYTHING ELSE')
 line(OP, 22, 'Offices, IT and travel', 'EUR',
      lambda cl, i: (f'=Personnel!{cl}20*({LV("fac_fte")}+{LV("it_fte")}'
-                    f'+{LV("trav_fte")})'), EUR,
-     note='scales with the number of people on the payroll')
+                    f'+{LV("trav_fte")})*(1+{LV("cost_infl")})^(YEAR({cl}$3)-2026)'), EUR,
+     note='scales with the number of people on the payroll, inflated like every other cost')
 line(OP, 23, 'Recruitment', 'EUR',
      lambda cl, i: ('=0' if i == 0 else
-                    f'=MAX(0,Personnel!{cl}20-Personnel!{pv(i)}20)*{LV("recruit")}'), EUR)
+                    f'=MAX(0,Personnel!{cl}20-Personnel!{pv(i)}20)*' + infl(cl, 'recruit')), EUR)
 line(OP, 24, 'Production line facility and maintenance', 'EUR',
      lambda cl, i: f'={RFY}!{cl}29*{LV("line_run")}', EUR,
      note='only once a line is actually producing')
@@ -839,7 +851,8 @@ line(OP, 32, 'General and administrative', 'EUR', lambda cl, i: f'={cl}8+{cl}27'
 line(OP, 33, 'Total operating expenses', 'EUR', lambda cl, i: f'=SUM({cl}30:{cl}32)',
      EUR, grand=True)
 line(OP, 35, 'Operating expenses as a share of revenue', '%',
-     lambda cl, i: f'=IFERROR({cl}33/{RFY}!{cl}50,0)', PCT1, 'ratio', annual='avg')
+     lambda cl, i: f'=IFERROR({cl}33/{RFY}!{cl}50,0)', PCT1, 'ratio',
+     annual=lambda a: f'=IFERROR({a}33/{RFY}!{a}50,0)')
 
 # ===========================================================================
 # FINANCIAL STATEMENTS
@@ -854,7 +867,7 @@ line(FS, 6, 'Revenue', 'EUR', lambda cl, i: f'={RFY}!{cl}50', EUR, 'link')
 line(FS, 7, 'Cost of goods sold', 'EUR', lambda cl, i: f'=-COGS!{cl}19', EUR, 'link')
 line(FS, 8, 'Gross profit', 'EUR', lambda cl, i: f'={cl}6+{cl}7', EUR, grand=True)
 line(FS, 9, 'Gross margin', '%', lambda cl, i: f'=IFERROR({cl}8/{cl}6,0)', PCT1,
-     'ratio', annual='avg')
+     'ratio', annual=lambda a: f'=IFERROR({a}8/{a}6,0)')
 line(FS, 11, 'Research and development', 'EUR', lambda cl, i: f'=-OPEX!{cl}30', EUR, 'link')
 line(FS, 12, 'Sales and marketing', 'EUR', lambda cl, i: f'=-OPEX!{cl}31', EUR, 'link')
 line(FS, 13, 'General and administrative', 'EUR', lambda cl, i: f'=-OPEX!{cl}32', EUR, 'link')
@@ -862,7 +875,7 @@ line(FS, 14, 'Total operating expenses', 'EUR', lambda cl, i: f'=SUM({cl}11:{cl}
      EUR, total=True)
 line(FS, 16, 'EBITDA', 'EUR', lambda cl, i: f'={cl}8+{cl}14', EUR, grand=True)
 line(FS, 17, 'EBITDA margin', '%', lambda cl, i: f'=IFERROR({cl}16/{cl}6,0)', PCT1,
-     'ratio', annual='avg')
+     'ratio', annual=lambda a: f'=IFERROR({a}16/{a}6,0)')
 line(FS, 19, 'Depreciation', 'EUR',
      lambda cl, i: ('=0' if i == 0 else
                     f'=-{pv(i)}63/({LV("dep_life")}*12)'), EUR,
@@ -876,7 +889,7 @@ line(FS, 22, 'Tax', 'EUR',
      note='losses are carried forward and absorb profit before any tax is paid')
 line(FS, 23, 'Net income', 'EUR', lambda cl, i: f'={cl}21+{cl}22', EUR, grand=True)
 line(FS, 24, 'Net margin', '%', lambda cl, i: f'=IFERROR({cl}23/{cl}6,0)', PCT1,
-     'ratio', annual='avg')
+     'ratio', annual=lambda a: f'=IFERROR({a}23/{a}6,0)')
 
 bar(FS, 26, 'CASH FLOW')
 line(FS, 27, 'Net income', 'EUR', lambda cl, i: f'={cl}23', EUR)
@@ -900,13 +913,14 @@ line(FS, 36, 'Loan drawn', 'EUR',
 line(FS, 37, 'Cash from financing', 'EUR', lambda cl, i: f'={cl}35+{cl}36', EUR, total=True)
 line(FS, 38, 'Movement in cash', 'EUR', lambda cl, i: f'={cl}32+{cl}34+{cl}37', EUR)
 line(FS, 39, 'Cash at the start of the month', 'EUR',
-     lambda cl, i: (f'={LV("open_cash")}' if i == 0 else f'={pv(i)}40'), EUR, annual='end')
+     lambda cl, i: (f'={LV("open_cash")}' if i == 0 else f'={pv(i)}40'), EUR, annual='start')
 line(FS, 40, 'Cash at the end of the month', 'EUR', lambda cl, i: f'={cl}39+{cl}38',
      EUR, total=True, annual='end')
 
 bar(FS, 42, 'BALANCE SHEET')
 line(FS, 43, 'Cash', 'EUR', lambda cl, i: f'={cl}40', EUR, annual='end')
-line(FS, 44, 'Receivables', 'EUR', lambda cl, i: f'={LV("dso")}/30*{cl}6', EUR, annual='end')
+line(FS, 44, 'Receivables', 'EUR', lambda cl, i: f'={LV("dso")}/30*({cl}6-{RFY}!{cl}49)', EUR,
+     annual='end', note='on trading revenue only; the subsidy is a cash receipt, not an invoice')
 line(FS, 45, 'Inventory', 'EUR', lambda cl, i: f'={LV("dio")}/30*-{cl}7', EUR, annual='end')
 line(FS, 46, 'Total current assets', 'EUR', lambda cl, i: f'=SUM({cl}43:{cl}45)', EUR,
      total=True, annual='end')
@@ -1012,7 +1026,7 @@ d_bar(22, 'PEOPLE')
 d_line(23, 'Field service engineers', lambda y: yc('Personnel', 18, y))
 d_line(24, 'Total headcount', lambda y: yc('Personnel', 20, y), NUM1, total=True)
 d_line(26, 'Revenue per person',
-       lambda y: f"=IFERROR({DCOL[y]}14/{DCOL[y]}25,0)", EUR,
+       lambda y: f"=IFERROR({DCOL[y]}14/{DCOL[y]}24,0)", EUR,
        note='Viessmann runs at about EUR276k and Vaillant about EUR200k')
 
 d_bar(28, 'CASH AND FUNDING')
@@ -1027,7 +1041,9 @@ d_line(32, 'Lowest cash during the year',
 FSQ = "'Financial Statements'"
 DATES = f'{FSQ}!$E$3:${MC[-1]}$3'
 CASHR = f'{FSQ}!$E$40:${MC[-1]}$40'
-POSTR = f'{FSQ}!$N$40:${MC[-1]}$40'          # from October 2026 onwards
+RIDX = f"MATCH({LV('eq2_d')},{DATES},0)"    # column index of the month the second round lands
+POSTR = f"INDEX({CASHR},{RIDX}):INDEX({CASHR},{NM})"   # cash from the raise month onwards, follows the date input
+EQR = f"{FSQ}!$E$35:${MC[-1]}$35"
 TROUGH = 'D38'
 
 def su_line(row, lbl, formula, fmt=EUR, tot=False, note=None, indent=0):
@@ -1046,7 +1062,7 @@ d_bar(36, 'WHERE THE MONEY GOES')
 su_line(37, 'Lowest the cash balance ever gets, after the raise',
         f'=MIN({POSTR})', note='the moment the plan is closest to running out')
 su_line(38, 'The month it happens',
-        f'=INDEX({DATES},MATCH(D37,{POSTR},0)+9)', DATE_FMT)
+        f'=INDEX({DATES},MATCH(D37,{POSTR},0)+{RIDX}-1)', DATE_FMT)
 
 TO_TROUGH = lambda row: (f'SUMIF({DATES},"<="&{TROUGH},'
                          f'{FSQ}!$E${row}:${MC[-1]}${row})')
@@ -1063,14 +1079,14 @@ su_line(47, 'Total', '=SUM(D44:D46)', tot=True,
         note='ties to total money available')
 
 d_bar(49, 'IS THE RAISE THE RIGHT SIZE')
-su_line(50, 'Cash the moment the raise lands', f'={FSQ}!{MC[9]}40')
+su_line(50, 'Cash the moment the raise lands', f'=INDEX({CASHR},{RIDX})')
 su_line(51, 'Most of the raise ever drawn down', '=D50-D37')
 su_line(52, 'Share of the raise the plan actually uses',
-        f'=IFERROR(D51/SUM({FSQ}!{MC[9]}35:{MC[-1]}35),0)', PCT1, tot=True,
+        f'=IFERROR(D51/SUM(INDEX({EQR},{RIDX}):INDEX({EQR},{NM})),0)', PCT1, tot=True,
         note='well under 100% means the raise is bigger than this plan needs')
 su_line(53, 'Months of operating cost left at the low point',
-        f'=IFERROR(D37/(-{FSQ}!BP14/12),0)', NUM1,
-        note='a plan of this size wants three months or more here')
+        f"=IFERROR(D37/(-HLOOKUP(YEAR(D38),{FSQ}!$BN$3:$BR$14,12,FALSE)/12),0)", NUM1,
+        note='cash at the low point over that year\'s average monthly operating cost. Three months or more is comfortable')
 
 DB['B34'] = 'Balance sheet check, worst month across the whole model'
 DB['B34'].font = f(bold=True)

@@ -43,7 +43,7 @@ def dat(label):
 open_cash = n(live('Opening cash at Jan-2026'))
 sal_infl  = n(live('Annual salary increase'))
 taxr      = n(live('Corporate income tax rate'))
-loan_rate = n(live('Interest on the working capital loan'))
+loan_rate = n(live('Interest on the convertible loan'))
 sell_from = dat('First month we can sell')
 hire_from = dat('Hiring starts from')
 freeze_to = dat('Committed 2026 plan holds until')
@@ -229,13 +229,13 @@ for i in range(NM):
     S['o7'][i] = FROZEN['p_sm'][i] if frozen else S['pc_sm'][i]
     S['o8'][i] = FROZEN['p_ga'][i] if frozen else S['pc_ga'][i]
     S['o12'][i] = S['spend'][i]
-    S['o13'][i] = S['ptr_h'][i]*enable
+    S['o13'][i] = S['ptr_h'][i]*enable*infl_c
     S['o14'][i] = FROZEN['np_sm'][i] if frozen else S['o12'][i]+S['o13'][i]
     S['o17'][i] = r_dev*infl_c
     S['o18'][i] = r_thr*infl_c
     S['o19'][i] = FROZEN['np_rnd'][i] if frozen else S['o17'][i]+S['o18'][i]
-    S['o22'][i] = S['hc_pay'][i]*(fac+it+trav)
-    S['o23'][i] = 0.0 if i == 0 else max(0.0, S['hc_pay'][i]-S['hc_pay'][i-1])*recr
+    S['o22'][i] = S['hc_pay'][i]*(fac+it+trav)*infl_c
+    S['o23'][i] = 0.0 if i == 0 else max(0.0, S['hc_pay'][i]-S['hc_pay'][i-1])*recr*infl_c
     S['o24'][i] = S['lines'][i]*line_run
     S['o25'][i] = g_fin*infl_c
     S['o26'][i] = g_oth*infl_c
@@ -262,7 +262,7 @@ for i in range(NM):
     S['f22'][i] = -(max(0.0, S['f21'][i]-prev_tlcf)*taxr) if S['f21'][i] > 0 else 0.0
     S['f23'][i] = S['f21'][i]+S['f22'][i]
     S['f64'][i] = max(0.0, prev_tlcf-max(0.0, S['f21'][i]))+max(0.0, -S['f21'][i])
-    S['f44'][i] = dso/30*S['f6'][i]
+    S['f44'][i] = dso/30*(S['f6'][i]-S['r_grant'][i])
     S['f45'][i] = dio/30*(-S['f7'][i])
     S['f50'][i] = dpo/30*(-S['f7'][i])
     pa = 0.0 if i == 0 else S['f44'][i-1]

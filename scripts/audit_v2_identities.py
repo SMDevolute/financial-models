@@ -120,14 +120,29 @@ for lbl,got,want in (('R&D',O30,TH_RND),('sales and marketing',O31,TH_SM),('G&A'
         (abs(g[i]-w[i])<T,f'{g[i]:,.0f} vs {w[i]:,.0f}'))
 
 print('\n=== ANNUAL COLUMNS ===')
+import re as _re
 def annual_kind(ws,r):
     fm=F[ws.title].cell(r,AC0).value
     if not isinstance(fm,str): return None
     if fm.startswith('=SUM('): return 'sum'
     if fm.startswith('=AVERAGE') or 'AVERAGE(' in fm: return 'avg'
     if fm.startswith('=MIN('): return 'min'
+    if fm.startswith('=IFERROR('): return 'ratio'
+    m=_re.fullmatch(r'=\$?([A-Z]+)\$?(\d+)',fm)
+    if m and m.group(1)=='E': return 'start'      # opening balance: first month of the year
     return 'end'
-bad_ann=0; classified={'sum':[],'end':[],'avg':[],'min':[]}
+_REF=_re.compile(r"(?:'([^']+)'!)?\$?([A-Z]{1,3})\$?(\d+)")
+def eval_ratio(ws,r,y):
+    """Evaluate an =IFERROR(a/b,0) annual formula from the cached values it points at."""
+    fm=F[ws.title][f'{YC[y]}{r}'].value
+    body=fm[len('=IFERROR('):-len(',0)')]
+    def sub(m):
+        sh=V[m.group(1)] if m.group(1) else ws
+        return repr(n(sh[f'{m.group(2)}{m.group(3)}'].value))
+    expr=_REF.sub(sub,body)
+    try: return eval(expr,{'__builtins__':{}},{})
+    except ZeroDivisionError: return 0.0
+bad_ann=0; classified={'sum':[],'end':[],'avg':[],'min':[],'ratio':[],'start':[]}
 for ws in (RF,CG,PE,OP,FS):
     for r in range(4,70):
         k=annual_kind(ws,r)
@@ -136,8 +151,9 @@ for ws in (RF,CG,PE,OP,FS):
         for y in YEARS:
             got=n(ws[f'{YC[y]}{r}'].value)
             sl=mv[(y-2026)*12:(y-2026)*12+12]
-            want={'sum':sum(sl),'end':sl[-1],
-                  'avg':(sum(sl)/12 if sl else 0),'min':min(sl)}[k]
+            want={'sum':sum(sl),'end':sl[-1],'start':sl[0],
+                  'avg':(sum(sl)/12 if sl else 0),'min':min(sl),
+                  'ratio':(eval_ratio(ws,r,y) if k=='ratio' else 0)}[k]
             if abs(got-want)>max(0.05,abs(want)*1e-9):
                 bad_ann+=1
                 print(f'  FAIL  {ws.title}!{YC[y]}{r} ({k}) got {got:,.2f} want {want:,.2f}')
