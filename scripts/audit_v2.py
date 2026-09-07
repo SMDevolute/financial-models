@@ -66,6 +66,10 @@ def run(script, args, keep=('MISMATCH', 'FAIL', 'agree', 'ALL ', 'FAILURES')):
     out = [l for l in r.stdout.splitlines() if any(k in l for k in keep)]
     for l in out:
         print('  ' + l.strip())
+    if r.returncode != 0 or not out:
+        print(f'  FAIL  {script} crashed or produced no result')
+        print('  ' + (r.stderr.strip().splitlines() or ['no stderr'])[-1])
+        return False
     return 'FAIL' not in r.stdout and 'MISMATCH' not in r.stdout
 
 

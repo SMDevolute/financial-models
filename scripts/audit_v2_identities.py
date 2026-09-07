@@ -137,6 +137,12 @@ def eval_ratio(ws,r,y):
     """Evaluate an =IFERROR(a/b,0) annual formula from the cached values it points at."""
     fm=F[ws.title][f'{YC[y]}{r}'].value
     body=fm[len('=IFERROR('):-len(',0)')]
+    def sumrange(m):
+        c1,r1,c2,r2=m.group(1),int(m.group(2)),m.group(3),int(m.group(4))
+        from openpyxl.utils import column_index_from_string as ci
+        tot=sum(n(ws.cell(rr,cc).value) for rr in range(r1,r2+1) for cc in range(ci(c1),ci(c2)+1))
+        return repr(tot)
+    body=_re.sub(r"SUM\(\$?([A-Z]{1,3})\$?(\d+):\$?([A-Z]{1,3})\$?(\d+)\)",sumrange,body)
     def sub(m):
         sh=V[m.group(1)] if m.group(1) else ws
         return repr(n(sh[f'{m.group(2)}{m.group(3)}'].value))
