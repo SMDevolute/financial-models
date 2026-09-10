@@ -127,7 +127,9 @@ Before designing it I ran a one-at-a-time sensitivity, moving each input 20% eac
 | Installer commission | EUR2.6m |
 | Rep quota, units per partner, debtor days | nil |
 
-Rep quota moves 2030 EBITDA by EUR284 and units per partner and debtor days by nothing, because demand is the binding constraint in every month of the base case and the plan uses 8% of its selling capacity. Those are not in the tab; a flat row would read as a broken model.
+Rep quota moves 2030 EBITDA by EUR284 and units per partner and debtor days by nothing, because demand is the lowest of the three constraints in every month of 2027, 2028 and 2029, and in the first seven months of 2030. The plan uses 65% of its selling capacity in 2030. Those inputs are not in the tab; a flat row would read as a broken model.
+
+Build capacity is a different matter and is in the tab. From August 2030 the assembly partner's 650 a month becomes the lowest of the three: demand reaches 715 in December and the model sells 650. Across 2030 the plan uses 95% of build capacity and loses 173 units to it. That is why assembly capacity ranked second in the sensitivity at a EUR7.9m swing.
 
 The sensitivity also showed the shape of the downside. A 20% cut to any single demand lever drops 2028 plus 2029 volume below 5,000, which loses the middle BOM tier, and the case then runs out of cash. It is a threshold, not a gradient.
 
