@@ -162,3 +162,30 @@ The full five-phase audit passes on the workbook with the tab in it.
 ## A note on wording
 
 Simon called out the phrase "15% is the tier it never escapes" in the mock-up as meaningless. He is right, and it was one of several. Every note in the tab now states a fact: what the number is, what the client's figure is, what the benchmark is, what happens below the threshold. No metaphors.
+
+## Aggressive scenarios, same day
+
+Same treatment for the aggressive workbook. The sensitivity ranked BOM cost first again (EUR44.4m swing in 2030 EBITDA), then orders per partner (EUR26.1m), partners signed (EUR24.9m), cost per lead (EUR18.0m), close rate and lead quality (EUR17.2m each), marketing spend (EUR15.1m) and the turbineketel price (EUR11.9m). Assembly partner capacity moves aggressive EBITDA by nil, because the two in-house lines take build capacity to 3,000 a month and it never binds, so that row is in the base tab and not the aggressive one. Seven inputs there, eight in base.
+
+`scripts/build_scenarios.py` now reads the plan's own values from the workbook and applies multipliers, so one set of definitions serves both cases: marketing 70% and 140%, cost per lead 125% and 83%, close rate 80% and 113%, partners signed 75% and 125%, orders per partner 60% and 140%, and a 30% BOM cost-down in the downside against 50% in the plan.
+
+Aggressive results:
+
+| | Downside | Plan | Upside |
+| --- | --- | --- | --- |
+| Units 2030 | 8,446 | 18,780 | 33,732 |
+| 2028 plus 2029 volume | 8,341 | 18,594 | 34,052 |
+| Gross margin 2030 | 25% | 37% | 37% |
+| EBITDA 2030 | +3.7m | +78.7m | +162.2m |
+| First profitable year | 2030 | 2027 | 2027 |
+| Lowest cash after the raise | -14.14m | +0.99m | +0.83m |
+| Months of cover | -6.7 | 1.4 | 1.0 |
+| Needs more than EUR10m | Yes, EUR14.1m more | No | No |
+
+Two things worth putting in front of Simon.
+
+The downside is far worse here than in base. All three scenarios clear the 5,000-unit tier, so the tier is not the problem; the EUR9m of capex and the hiring ahead of volume are. The aggressive downside is EUR14.1m short, against EUR4.5m in the base downside.
+
+The upside has less cash cover than the plan, 1.0 month against 1.4. Selling 33,732 units instead of 18,780 consumes more working capital in the ramp than the extra margin puts back in the same months. Growing faster on EUR10m makes the January 2027 position tighter, not easier.
+
+Both workbooks and the master pass the full five-phase audit with the tabs in place, 800-draw sweep included.
