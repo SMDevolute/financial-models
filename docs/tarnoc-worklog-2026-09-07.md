@@ -105,3 +105,58 @@ Two guards were built in after the sweep's own first version reported a confiden
 The sweep is now phase 5 of `scripts/audit_v2.py`, 300 draws by default, about 15 seconds on top of the rest. `SWEEP_DRAWS=2000` before anything goes to the client, `SWEEP_DRAWS=0` to skip.
 
 What this does not cover, and should be said plainly: the sweep tests the logic, not the assumptions. A 50% BOM cost-down is either achievable or it is not, and no audit will ever settle that. Only a supplier quote will.
+
+# 10 September 2026: scenario tab
+
+Simon asked for a scenario analysis on its own tab in the base workbook: three scenarios, key outcomes side by side.
+
+## Choosing what to flex
+
+Before designing it I ran a one-at-a-time sensitivity, moving each input 20% each way and measuring the swing in 2030 EBITDA. Ranked:
+
+| Input | 2030 EBITDA swing |
+| --- | --- |
+| BOM cost across the three tiers | EUR17.5m |
+| Assembly partner capacity | EUR7.9m |
+| Orders per partner per month | EUR5.8m |
+| Partners signed per month | EUR5.3m |
+| Turbineketel price | EUR4.7m |
+| Close rate, lead quality | EUR4.3m each |
+| Cost per lead | EUR4.0m |
+| Marketing spend | EUR3.4m |
+| Installer commission | EUR2.6m |
+| Rep quota, units per partner, debtor days | nil |
+
+Rep quota moves 2030 EBITDA by EUR284 and units per partner and debtor days by nothing, because demand is the binding constraint in every month of the base case and the plan uses 8% of its selling capacity. Those are not in the tab; a flat row would read as a broken model.
+
+The sensitivity also showed the shape of the downside. A 20% cut to any single demand lever drops 2028 plus 2029 volume below 5,000, which loses the middle BOM tier, and the case then runs out of cash. It is a threshold, not a gradient.
+
+## What was built
+
+`scripts/build_scenarios.py`, run after the main build. It recalculates the workbook, runs the shadow model three times with different assumption sets, and writes a Scenarios tab as sheet 2 of the base workbook.
+
+Eight rows of inputs in pale yellow (BOM cost-down achieved, marketing spend, cost per lead, close rate, partners signed, orders per partner, assembly capacity, turbineketel price), then volume, profit and cash blocks, then two native Excel charts (EBITDA by year as clustered columns, cash balance by month as lines) with their data written out in a labelled block below so the charts can be checked against numbers.
+
+Results:
+
+| | Downside | Plan | Upside |
+| --- | --- | --- | --- |
+| Units 2030 | 3,391 | 7,407 | 11,333 |
+| 2028 plus 2029 volume | 2,428 | 5,466 | 9,915 |
+| Clears the 5,000 tier | No | Yes | Yes |
+| Gross margin 2030 | 15% | 37% | 37% |
+| EBITDA 2030 | -1.3m | +33.6m | +55.1m |
+| First profitable year | none by 2030 | 2028 | 2028 |
+| Lowest cash after the raise | -4.57m | +0.60m | +1.16m |
+| Months of cover | -7.6 | 2.3 | 4.3 |
+| Needs more than EUR3m | Yes, EUR4.6m more | No | No |
+
+## Two guards
+
+The script refuses to write the tab unless the Plan column reproduces the live workbook on 2030 units, revenue and EBITDA. And row 39 in the tab recomputes the live model and subtracts the stored Plan column; it reads nil today and conditional formatting turns it red if it ever does not. That covers the one weakness of storing values rather than formulas.
+
+The full five-phase audit passes on the workbook with the tab in it.
+
+## A note on wording
+
+Simon called out the phrase "15% is the tier it never escapes" in the mock-up as meaningless. He is right, and it was one of several. Every note in the tab now states a fact: what the number is, what the client's figure is, what the benchmark is, what happens below the threshold. No metaphors.
